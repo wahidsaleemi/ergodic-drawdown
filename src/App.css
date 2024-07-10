@@ -1,0 +1,146 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.section {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 20px;
+  gap: 20px;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+  border: 1px solid gray;
+  flex: 1;
+  gap: 10px;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid red;
+}
+
+.input-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.start {
+  justify-content: flex-start;
+  gap: 5px;
+}
+
+.start > label {
+  margin-right: 0px;
+}
+
+label {
+  margin-right: 5px;
+}
+
+.select-model {
+  width: 100%;
+}
+
+.input-number {
+  max-width: 75px;
+}
+
+.header {
+  text-align: start;
+  padding-left: 20px;
+  font-size: x-large;
+}
+
+.wide {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.wide > .input-row {
+  flex: 0 1 ;
+}
+
+.angled-ribbon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 135px;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.angled-ribbon a {
+  display: block;
+  width: 300px;
+  height: 45px;
+  background: #1a1a1a;
+  color: #ffffff;
+  font-size: .8rem;
+  font-weight: bold;
+  text-align: center;
+  position: absolute;
+  top: 30px;
+  right: -100px;
+  transform: rotate(45deg);
+  transition: all 0.3s;
+  border: 1px solid #1a1a1a;
+}
+
+.angled-ribbon a:hover {
+  border-color: #646cff;
+}
