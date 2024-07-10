@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc -b && vite build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "dev": "vite",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
@@ -29,6 +31,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "eslint-config-current-thing": "^7.3.6",
+    "gh-pages": "^6.1.1",
     "typescript": "^5.2.2",
     "vite": "^5.3.1"
   }

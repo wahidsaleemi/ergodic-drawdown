@@ -46,6 +46,7 @@ import {
   saveHalvings,
   weeksSinceLastHalving,
 } from "./helpers";
+import { legal } from "./legal";
 import {
   basicGrowthModel,
   cagrModel,
@@ -1004,7 +1005,7 @@ const StochasticGraph = (): React.ReactNode => {
       : `${(100 - (zero / samples) * 100).toFixed(2)}% chance of not exhausting bitcoin holdings with an average of ${average.toFixed(4)} Bitcoin left (median ${median.toFixed(4)}), if drawing down from a ${bitcoin} bitcoin balance starting ${new Date(distroDate).toDateString()} to meet $${costOfLiving.toLocaleString()} of yearly costs (in todays dollars), expecting ${inflation}% inflation per year.`;
   const volStep = walk === "Bubble" ? 0.005 : 0.001;
   const using = data.length * data[0]?.length * 2;
-  const dataPointCount = `(Roughly ${using.toLocaleString()} data points using ${((using * 40) / (1024 * 1024)).toFixed(0)} MB of memory)`;
+  const dataPointCount = `(Roughly ${using.toLocaleString()} data points @ ${((using * 40) / (1024 * 1024)).toFixed(0)} MB RAM)`;
 
   return (
     <div className="container">
@@ -1106,7 +1107,7 @@ const StochasticGraph = (): React.ReactNode => {
             />
             {epochLength}
           </div>
-          <div className="input-row">{dataPointCount}</div>
+          <div className="input-row stats">{dataPointCount}</div>
         </fieldset>
         <fieldset className="group">
           <legend>{fieldLabels.drawdown}</legend>
@@ -1166,7 +1167,6 @@ const StochasticGraph = (): React.ReactNode => {
         </fieldset>
         <fieldset className="group">
           <legend>{fieldLabels.graph}</legend>
-
           <fieldset className="wide group">
             <legend>{fieldLabels.render}</legend>
             <div className="input-row">
@@ -1277,6 +1277,7 @@ const StochasticGraph = (): React.ReactNode => {
       {escapeVelocity}
       <Line data={dataProperties} options={options} />
       <ForkUs />
+      <div className="legal">{legal}</div>
     </div>
   );
 };
