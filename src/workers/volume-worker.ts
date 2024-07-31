@@ -1,5 +1,7 @@
 // workers/volume-worker.ts
 
+import hashSum from "hash-sum";
+
 import { MS_PER_DAY, MS_PER_WEEK, WEEKS_PER_YEAR } from "../constants";
 import { generateColor, quantile } from "../helpers";
 import { type VolumeReturn, type VolumeWorker } from "../types";
@@ -14,7 +16,7 @@ const volumeWorker = async (
   { bitcoin, costOfLiving, data, drawdownDate, inflation }: VolumeWorker,
   signal: AbortSignal,
 ): Promise<[string, VolumeReturn | undefined]> => {
-  const id = String(Date.now()).slice(9);
+  const id = hashSum([...String(Date.now())].reverse());
   console.time("volume" + id);
   signalState.aborted = false;
 
@@ -61,6 +63,7 @@ const volumeWorker = async (
       }
       const adjustedInnerIndex = innerIndex + adjustedDif;
       if (innerIndex !== 0) weeklyCostOfLiving *= 1 + weeklyInflationRate;
+      // eslint-disable-next-line security/detect-object-injection
       const y = previous - weeklyCostOfLiving / graph[adjustedInnerIndex]?.y;
       previous = y;
       dataArray.push({ x, y });

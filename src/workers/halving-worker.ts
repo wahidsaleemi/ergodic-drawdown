@@ -1,11 +1,6 @@
 import { fetchBlockByHeight, getCurrentBlockHeight } from "../api";
 import { calculateHalvings, loadHalvings, saveHalvings } from "../helpers";
-import { type HalvingData } from "../types";
-
-interface HalvingWorker {
-  currentBlock: number;
-  halvings: HalvingData;
-}
+import { type HalvingData, type HalvingWorker } from "../types";
 
 // eslint-disable-next-line functional/functional-parameters
 const halvingWorker = async (): Promise<HalvingWorker> => {
@@ -30,6 +25,7 @@ const halvingWorker = async (): Promise<HalvingWorker> => {
   const fetchedHalvings: HalvingData = {};
   for (const dataObject of fetchedDataArrays) {
     const key = Object.keys(dataObject)[0];
+    // eslint-disable-next-line security/detect-object-injection
     fetchedHalvings[key] = dataObject[key];
   }
   const knownHalvings = { ...storedHalvings, ...fetchedHalvings };

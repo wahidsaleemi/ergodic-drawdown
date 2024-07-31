@@ -1,5 +1,8 @@
-// eslint-disable-next-line @eslint-community/eslint-comments/disable-enable-pair
+/* eslint-disable @eslint-community/eslint-comments/disable-enable-pair */
+/* eslint-disable security/detect-object-injection */
 /* eslint-disable unicorn/prefer-spread */
+import hashSum from "hash-sum";
+
 import { WEEKS_PER_EPOCH } from "../constants";
 import {
   applyModel,
@@ -37,14 +40,14 @@ const simulationWorker = async (
   }: SimulationWorker,
   signal: AbortSignal,
 ): Promise<[string, Data]> => {
-  const now = String(Date.now()).slice(9);
-  console.log("starting new simulation...", now);
+  const id = hashSum([...String(Date.now())].reverse());
+  console.log("starting new simulation...", id);
   signalState.aborted = false;
 
   // eslint-disable-next-line functional/functional-parameters
   const AbortAction = (): void => {
     signal.removeEventListener("abort", AbortAction);
-    console.warn("Aborted", now);
+    console.warn("Aborted", id);
     signalState.aborted = true;
   };
 
@@ -56,7 +59,7 @@ const simulationWorker = async (
 
   if (previousSimPath === previousAdjustPath || simPath !== previousSimPath) {
     previousSimPath = simPath;
-    console.time("simulation" + now);
+    console.time("simulation" + id);
     const graphs: Data = [];
     const startingPrice = getStartingPriceNormalized(
       mapped,
@@ -70,8 +73,8 @@ const simulationWorker = async (
       for (let innerIndex = 0; innerIndex < epochCount; innerIndex++) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (signalState.aborted) {
-          console.timeEnd("simulation" + now);
-          return [now, []];
+          console.timeEnd("simulation" + id);
+          return [id, []];
         } else {
           // console.log("loop sim", now);
         }
@@ -96,10 +99,10 @@ const simulationWorker = async (
         ),
       );
     }
-    console.timeEnd("simulation" + now);
+    console.timeEnd("simulation" + id);
     data = graphs;
     signal.removeEventListener("abort", AbortAction);
-    return [now, graphs];
+    return [id, graphs];
     // eslint-disable-next-line unicorn/no-negated-condition
   } else if (previousAdjustPath !== adjustPath) {
     console.time("adjustment");
@@ -111,7 +114,7 @@ const simulationWorker = async (
       if (GTcurrant && LTnext) {
         console.timeEnd("adjustment");
         signal.removeEventListener("abort", AbortAction);
-        return [now, data];
+        return [id, data];
       } else if (GTcurrant && !LTnext) {
         const last = -(
           (Math.floor(data[0].length / WEEKS_PER_EPOCH) - epochCount) *
@@ -121,7 +124,7 @@ const simulationWorker = async (
         console.timeEnd("adjustment");
         signal.removeEventListener("abort", AbortAction);
         data = newData;
-        return [now, newData];
+        return [id, newData];
       } else if (!GTcurrant && LTnext) {
         const newData: Data = [];
         let count = 0;
@@ -146,7 +149,7 @@ const simulationWorker = async (
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (signalState.aborted) {
               console.timeEnd("adjustment");
-              return [now, []];
+              return [id, []];
             } else {
               // console.log("adjustment loop 1");
             }
@@ -173,7 +176,7 @@ const simulationWorker = async (
         console.timeEnd("adjustment");
         signal.removeEventListener("abort", AbortAction);
         data = newData;
-        return [now, newData];
+        return [id, newData];
       }
     } else if (samples > data.length) {
       const additionalData: Data = [];
@@ -191,7 +194,7 @@ const simulationWorker = async (
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (signalState.aborted) {
             console.timeEnd("adjustment");
-            return [now, []];
+            return [id, []];
           } else {
             // console.log("adjustment loop 2");
           }
@@ -219,17 +222,17 @@ const simulationWorker = async (
       data = finalData;
       signal.removeEventListener("abort", AbortAction);
       console.timeEnd("adjustment");
-      return [now, finalData];
+      return [id, finalData];
     } else if (samples < data.length) {
       const finalData = data.slice(0, samples);
       data = finalData;
       signal.removeEventListener("abort", AbortAction);
       console.timeEnd("adjustment");
-      return [now, finalData];
+      return [id, finalData];
     }
   }
   console.error("you should never get this...");
-  return [now, []];
+  return [id, []];
 };
 
 export default simulationWorker;

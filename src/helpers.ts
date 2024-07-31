@@ -111,6 +111,7 @@ export const quantile = (array: number[], percent: number): number => {
   if (percent === 0) return array[0];
   if (percent === 1) return array.at(-1) ?? 0;
   const id = array.length * percent - 1;
+  // eslint-disable-next-line security/detect-object-injection
   if (id === Math.floor(id)) return (array[id] + array[id + 1]) / 2;
   return array[Math.ceil(id)];
 };

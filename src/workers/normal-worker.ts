@@ -1,3 +1,7 @@
+// eslint-disable-next-line @eslint-community/eslint-comments/disable-enable-pair
+/* eslint-disable security/detect-object-injection */
+import hashSum from "hash-sum";
+
 import { distroColor } from "../content";
 import { type DatasetList } from "../types";
 
@@ -11,7 +15,7 @@ const normalDistributionWorker = async (
   volumeDataset: DatasetList,
   signal: AbortSignal,
 ): Promise<[string, DatasetList | undefined]> => {
-  const id = String(Date.now()).slice(9);
+  const id = hashSum([...String(Date.now())].reverse());
   console.time("normal" + id);
   signalState.aborted = false;
 

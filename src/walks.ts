@@ -1,3 +1,4 @@
+const LENGTH = 208;
 interface WalkOptions {
   clampBottom: boolean;
   clampTop: boolean;
@@ -5,9 +6,6 @@ interface WalkOptions {
   startDay: number;
   volatility: number;
 }
-
-const LENGTH = 208;
-
 export type IWalk = (Options: WalkOptions) => number[];
 
 let currentPingPongPhase: "ascent" | "descent" = "descent";

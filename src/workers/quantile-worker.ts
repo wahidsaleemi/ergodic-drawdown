@@ -1,3 +1,5 @@
+import hashSum from "hash-sum";
+
 import { quantileColor } from "../content";
 import { quantile } from "../helpers";
 import { type DatasetList } from "../types";
@@ -12,7 +14,7 @@ const quantileWorker = async (
   volumeDataset: DatasetList,
   signal: AbortSignal,
 ): Promise<[string, DatasetList | undefined]> => {
-  const id = String(Date.now()).slice(9);
+  const id = hashSum([...String(Date.now())].reverse());
   console.time("quantile" + id);
   signalState.aborted = false;
 
@@ -59,6 +61,7 @@ const quantileWorker = async (
       // console.log("loop quantile");
     }
     const sortedValues = values.sort((first, second) => first - second);
+    // eslint-disable-next-line security/detect-object-injection
     quantileData[x] = {
       medianInner: quantile(sortedValues, 0.5),
       q000: quantile(sortedValues, 0),

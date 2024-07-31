@@ -206,14 +206,9 @@ const StochasticGraph = (): React.ReactNode => {
     )
       .then(([id, newData]) => {
         if (signal.aborted || newData.length === 0) {
-          console.log("Aborted not setting state....", id);
+          console.log("Aborted not setting price state....", id);
         } else {
-          console.log(
-            "Setting state....",
-            id,
-            newData.length,
-            newData[0].length,
-          );
+          console.log("Setting price state....", id);
           setPriceData(newData);
           setLoadingPriceData(false);
         }

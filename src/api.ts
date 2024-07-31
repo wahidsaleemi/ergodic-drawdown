@@ -1,5 +1,7 @@
 import { LAST_SAVED_TIMESTAMP } from "./constants";
-import { type BlockData } from "./types";
+import { type BitcoinDataPoint, type BlockData } from "./types";
+
+const CURRENT_PRICE = "current price";
 
 // eslint-disable-next-line functional/functional-parameters
 export const getCurrentBlockHeight = async (): Promise<number> => {
@@ -34,21 +36,8 @@ export const fetchBlockByHeight = async (height: number): Promise<number> => {
 };
 
 // eslint-disable-next-line functional/functional-parameters
-interface BitcoinDataPoint {
-  close: number;
-  conversionSymbol: string;
-  conversionType: string;
-  high: number;
-  low: number;
-  open: number;
-  time: number;
-  volumefrom: number;
-  volumeto: number;
-}
-
-// eslint-disable-next-line functional/functional-parameters
 export const getCurrentPrice = async (): Promise<BitcoinDataPoint> => {
-  console.time("current price");
+  console.time(CURRENT_PRICE);
   const url = `https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD`;
   const cacheKey = "BTC_PRICE_CACHE";
   // 1 hour cache
@@ -60,7 +49,7 @@ export const getCurrentPrice = async (): Promise<BitcoinDataPoint> => {
     if (cachedData !== null) {
       const cache = JSON.parse(cachedData) as BitcoinDataPoint;
       if (currentTimestamp - cache.time < cacheExpiry) {
-        console.timeEnd("current price");
+        console.timeEnd(CURRENT_PRICE);
         return cache;
       }
     }
@@ -80,12 +69,12 @@ export const getCurrentPrice = async (): Promise<BitcoinDataPoint> => {
       volumeto: 0,
     };
     localStorage.setItem(cacheKey, JSON.stringify(currentPriceData));
-    console.timeEnd("current price");
+    console.timeEnd(CURRENT_PRICE);
 
     return currentPriceData;
   } catch (error) {
     console.error("Error fetching current price:", error);
-    console.timeEnd("current price");
+    console.timeEnd(CURRENT_PRICE);
     return {
       close: 0,
       conversionSymbol: "",

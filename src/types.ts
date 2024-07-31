@@ -23,6 +23,11 @@ export interface BlockData {
 
 export type HalvingData = Record<string, number>;
 
+export interface HalvingWorker {
+  currentBlock: number;
+  halvings: HalvingData;
+}
+
 export interface Dataset {
   backgroundColor?: string;
   borderColor?: string;
@@ -42,8 +47,6 @@ export interface Dataset {
 export type DatasetList = Dataset[];
 
 export type Data = Array<Array<{ x: number; y: number }>>;
-export type RawData = Array<{ close: number; time: number }>;
-
 export interface SimulationWorker {
   clampBottom: boolean;
   clampTop: boolean;
@@ -70,4 +73,16 @@ export interface VolumeReturn {
   median: number;
   volumeDataset: DatasetList;
   zero: number;
+}
+// eslint-disable-next-line functional/functional-parameters
+export interface BitcoinDataPoint {
+  close: number;
+  conversionSymbol: string;
+  conversionType: string;
+  high: number;
+  low: number;
+  open: number;
+  time: number;
+  volumefrom: number;
+  volumeto: number;
 }
