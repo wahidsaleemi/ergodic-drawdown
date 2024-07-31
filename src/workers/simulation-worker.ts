@@ -37,7 +37,7 @@ const simulationWorker = async (
   }: SimulationWorker,
   signal: AbortSignal,
 ): Promise<[string, Data]> => {
-  const id = hashSum([...String(Date.now())].reverse());
+  const id = hashSum(Math.random());
   console.log("starting new simulation...", id);
   signalState.aborted = false;
 

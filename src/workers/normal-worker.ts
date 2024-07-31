@@ -12,7 +12,7 @@ const normalDistributionWorker = async (
   volumeDataset: DatasetList,
   signal: AbortSignal,
 ): Promise<[string, DatasetList | undefined]> => {
-  const id = hashSum([...String(Date.now())].reverse());
+  const id = hashSum(Math.random());
   console.time("normal" + id);
   signalState.aborted = false;
 

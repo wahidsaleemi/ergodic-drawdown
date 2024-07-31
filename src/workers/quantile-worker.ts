@@ -10,7 +10,7 @@ const quantileWorker = async (
   volumeDataset: DatasetList,
   signal: AbortSignal,
 ): Promise<[string, DatasetList | undefined]> => {
-  const id = hashSum([...String(Date.now())].reverse());
+  const id = hashSum(Math.random());
   console.time("quantile" + id);
   signalState.aborted = false;
 

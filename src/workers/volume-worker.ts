@@ -10,7 +10,7 @@ const volumeWorker = async (
   { bitcoin, costOfLiving, data, drawdownDate, inflation }: VolumeWorker,
   signal: AbortSignal,
 ): Promise<[string, VolumeReturn | undefined]> => {
-  const id = hashSum([...String(Date.now())].reverse());
+  const id = hashSum(Math.random());
   console.time("volume" + id);
   signalState.aborted = false;
 
