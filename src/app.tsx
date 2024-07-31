@@ -6,12 +6,17 @@ import "chartjs-adapter-date-fns";
 
 import { useQuery } from "@tanstack/react-query";
 import hashSum from "hash-sum";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { getCurrentPrice, getInterimWeeklyData } from "./api";
 import Lightning1 from "./assets/lightning1.svg?react";
 import marketData from "./bitcoin_weekly_prices_transformed_2.json";
-import Chart from "./chart";
 import {
   isMobile,
   MS_PER_WEEK,
@@ -47,6 +52,8 @@ import normalDistributionWorker from "./workers/normal-worker";
 import quantileWorker from "./workers/quantile-worker";
 import simulationWorker from "./workers/simulation-worker";
 import volumeWorker from "./workers/volume-worker";
+
+const Chart = React.lazy(async () => import("./chart"));
 
 const marketDataset = {
   borderColor: "rgb(246, 145, 50)",
@@ -620,7 +627,9 @@ const StochasticGraph = (): React.ReactNode => {
         </fieldset>
       </div>
       <div className="center-text">{escapeVelocity}</div>
-      <Chart dataProperties={dataProperties} halvings={halvings} />
+      <Suspense fallback={<div className="loader" />}>
+        <Chart dataProperties={dataProperties} halvings={halvings} />
+      </Suspense>
       <div className="pay-me">
         <Lightning1 />
         <a href="lightning:gildedpleb@getalby.com">{pay}</a>
