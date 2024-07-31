@@ -77,6 +77,7 @@ const StochasticGraph = (): React.ReactNode => {
   const [median, setMedian] = useState<number | undefined>();
   const [loadingPriceData, setLoadingPriceData] = useState<boolean>(true);
   const [loadingVolumeData, setLoadingVolumeData] = useState<boolean>(true);
+
   // Panel 1
   const [model, setModel] = useState<string>(models[2].modelType);
   const debouncedModel = useDebounce<string>(model, 300);

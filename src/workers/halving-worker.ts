@@ -18,20 +18,16 @@ const halvingWorker = async (): Promise<HalvingWorker> => {
       halvings: storedHalvings,
     };
   }
-  const fetchPromises = halvingsToFetch.map(async (height) => ({
-    [height.toString()]: await fetchBlockByHeight(height),
-  }));
-  const fetchedDataArrays = await Promise.all(fetchPromises);
+
   const fetchedHalvings: HalvingData = {};
-  for (const dataObject of fetchedDataArrays) {
-    const key = Object.keys(dataObject)[0];
-    // eslint-disable-next-line security/detect-object-injection
-    fetchedHalvings[key] = dataObject[key];
+  for await (const height of halvingsToFetch) {
+    fetchedHalvings[height.toString()] = await fetchBlockByHeight(height);
+    const knownHalvings = { ...storedHalvings, ...fetchedHalvings };
+    saveHalvings(knownHalvings);
   }
   const knownHalvings = { ...storedHalvings, ...fetchedHalvings };
   saveHalvings(knownHalvings);
   console.timeEnd("halving");
-
   return { currentBlock: currentBlockHeight, halvings: knownHalvings };
 };
 

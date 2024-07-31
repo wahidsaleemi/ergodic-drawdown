@@ -14,7 +14,7 @@ import {
 } from "chart.js";
 import annotationPlugin from "chartjs-plugin-annotation";
 import zoom from "chartjs-plugin-zoom";
-import React, { useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { Line } from "react-chartjs-2";
 
 import { isMobile } from "./constants";
@@ -139,6 +139,7 @@ const Chart = ({ dataProperties, halvings }: IChart): JSX.Element => {
     } satisfies ChartOptions<"line">;
   }, [annotations]);
 
+  // eslint-disable-next-line react/react-in-jsx-scope
   return <Line data={dataProperties} options={options} />;
 };
 
