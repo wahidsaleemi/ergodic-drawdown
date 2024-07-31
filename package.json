@@ -17,22 +17,30 @@
   ],
   "prettier": {},
   "dependencies": {
+    "@tanstack/react-query": "^5.51.15",
     "chart.js": "^4.4.3",
     "chartjs-adapter-date-fns": "^3.0.0",
     "chartjs-plugin-annotation": "^3.0.1",
     "chartjs-plugin-zoom": "^2.0.1",
     "date-fns": "^3.6.0",
+    "hash-sum": "^2.0.0",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@svgr/core": "^8.1.0",
+    "@types/hash-sum": "^1.0.2",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "eslint-config-current-thing": "^7.3.6",
     "gh-pages": "^6.1.1",
     "typescript": "^5.2.2",
-    "vite": "^5.3.1"
+    "vite": "^5.3.1",
+    "vite-plugin-svgr": "^4.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
