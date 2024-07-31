@@ -9,3 +9,17 @@ export const HALVING_INTERVAL = 210_000;
 
 export const WEEKS_PER_YEAR = 52;
 export const WEEKS_PER_EPOCH = 4 * WEEKS_PER_YEAR;
+
+export const LAST_SAVED_TIMESTAMP = 1_719_014_400;
+
+// eslint-disable-next-line functional/functional-parameters
+export const isMobile = (): boolean => {
+  if (typeof window !== "undefined" && typeof navigator !== "undefined") {
+    return (
+      /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+        navigator.userAgent,
+      ) || window.innerWidth <= 768
+    );
+  }
+  return false;
+};

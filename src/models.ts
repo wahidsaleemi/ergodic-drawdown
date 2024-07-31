@@ -41,11 +41,8 @@ const calculateOneYearFlow = memoize((blockNumber: number): number => {
   return calculateTotalStock(blockNumber) - calculateTotalStock(startBlock);
 });
 
-export const stockToFlowModel: PriceModel = {
+const stockToFlowModel: PriceModel = {
   maxPrice: ({ currentBitcoinBlock, week }): number => {
-    if (currentBitcoinBlock === undefined) return 0;
-    if (week === undefined) return 0;
-
     const blockToFind = currentBitcoinBlock + week * BLOCKS_PER_WEEK;
     const stock = calculateTotalStock(blockToFind);
     const flow = calculateOneYearFlow(blockToFind);
@@ -56,9 +53,6 @@ export const stockToFlowModel: PriceModel = {
     return basePrice + confidence;
   },
   minPrice: ({ currentBitcoinBlock, week }): number => {
-    if (currentBitcoinBlock === undefined) return 0;
-    if (week === undefined) return 0;
-
     const blockToFind = currentBitcoinBlock + week * BLOCKS_PER_WEEK;
     const stock = calculateTotalStock(blockToFind);
     const flow = calculateOneYearFlow(blockToFind);
@@ -71,11 +65,8 @@ export const stockToFlowModel: PriceModel = {
   modelType: "Stock-To-Flow (exponential)" as const,
 };
 
-export const stockToFlowModelNew: PriceModel = {
+const stockToFlowModelNew: PriceModel = {
   maxPrice: ({ currentBitcoinBlock, week }): number => {
-    if (currentBitcoinBlock === undefined) return 0;
-    if (week === undefined) return 0;
-
     const blockToFind = currentBitcoinBlock + week * BLOCKS_PER_WEEK;
     const stock = calculateTotalStock(blockToFind);
     const flow = calculateOneYearFlow(blockToFind);
@@ -86,9 +77,6 @@ export const stockToFlowModelNew: PriceModel = {
     return basePrice + confidence;
   },
   minPrice: ({ currentBitcoinBlock, week }): number => {
-    if (currentBitcoinBlock === undefined) return 0;
-    if (week === undefined) return 0;
-
     const blockToFind = currentBitcoinBlock + week * BLOCKS_PER_WEEK;
     const stock = calculateTotalStock(blockToFind);
     const flow = calculateOneYearFlow(blockToFind);
@@ -101,15 +89,11 @@ export const stockToFlowModelNew: PriceModel = {
   modelType: "Stock-To-Flow (2024 refit, exponential)" as const,
 };
 
-export const basicGrowthModel: PriceModel = {
+const basicGrowthModel: PriceModel = {
   maxPrice: ({ week }): number => {
-    if (week === undefined) return 0;
-
     return 200_000 + week * week * 2;
   },
   minPrice: ({ week }): number => {
-    if (week === undefined) return 0;
-
     return 40_000 + week * week;
   },
   modelType: "Quadratic (polynomial)" as const,
@@ -122,15 +106,13 @@ const basePriceModel = (currentDate: Date): number => {
   return Math.exp(coefficientA * lnMilliseconds + coefficientB);
 };
 
-export const rainbowChartModel: PriceModel = {
+const rainbowChartModel: PriceModel = {
   maxPrice: ({ week }): number => {
-    if (week === undefined) return 0;
     const currentDate = new Date(Date.now() + week * MS_PER_WEEK);
     return basePriceModel(currentDate);
   },
 
   minPrice: ({ week }): number => {
-    if (week === undefined) return 0;
     const currentDate = new Date(Date.now() + week * MS_PER_WEEK);
     return basePriceModel(currentDate) * 0.1;
   },
@@ -145,15 +127,13 @@ const powerLaw = (unixTimeMs: number, offsetYears = 0): number => {
   return scaleFactor * daysSinceStart ** 5.83;
 };
 
-export const powerLawModel: PriceModel = {
+const powerLawModel: PriceModel = {
   maxPrice: ({ week }): number => {
-    if (week === undefined) return 0;
     const currentDate = new Date(Date.now() + week * MS_PER_WEEK);
     return powerLaw(currentDate.getTime(), 6);
   },
 
   minPrice: ({ week }): number => {
-    if (week === undefined) return 0;
     const currentDate = new Date(Date.now() + week * MS_PER_WEEK);
     return powerLaw(currentDate.getTime());
   },
@@ -170,10 +150,8 @@ const calculateCAGRPrice = (startPrice: number, timeInMs: number): number => {
 };
 
 // Define the CAGR Model
-export const cagrModel: PriceModel = {
+const cagrModel: PriceModel = {
   maxPrice: ({ currentBitcoinPrice, week }): number => {
-    if (week === undefined) return 0;
-    if (currentBitcoinPrice === undefined) return 0;
     const startPrice = currentBitcoinPrice * 1.5;
     const targetDate = new Date(
       Date.now() + week * MS_PER_WEEK + 2 * MS_PER_YEAR,
@@ -182,8 +160,6 @@ export const cagrModel: PriceModel = {
   },
 
   minPrice: ({ currentBitcoinPrice, week }): number => {
-    if (week === undefined) return 0;
-    if (currentBitcoinPrice === undefined) return 0;
     const startPrice = currentBitcoinPrice * 0.75;
     const targetDate = new Date(
       Date.now() + week * MS_PER_WEEK - 2 * MS_PER_YEAR,
@@ -203,21 +179,35 @@ const calculateLinearPrice = (weeks: number, current: number): number => {
 };
 
 // Define the Linear Model
-export const linearModel: PriceModel = {
+const linearModel: PriceModel = {
   maxPrice: ({ currentBitcoinPrice, week }): number => {
-    if (currentBitcoinPrice === undefined) return 0;
-
-    if (week === undefined) return 0;
     return calculateLinearPrice(week, currentBitcoinPrice) * 1.628;
   },
 
   minPrice: ({ currentBitcoinPrice, week }): number => {
-    if (currentBitcoinPrice === undefined) return 0;
-
-    if (week === undefined) return 0;
     // Assume min price is slightly lower than max price for simplification
     return calculateLinearPrice(week, currentBitcoinPrice) * 0.628;
   },
 
   modelType: `Arithmetic (Linear, slope=${SLOPE.toFixed(0)}/week)`,
 };
+
+export const models = [
+  linearModel,
+  basicGrowthModel,
+  powerLawModel,
+  rainbowChartModel,
+  cagrModel,
+  stockToFlowModelNew,
+  stockToFlowModel,
+];
+
+export const modelMap = {
+  [basicGrowthModel.modelType]: basicGrowthModel,
+  [cagrModel.modelType]: cagrModel,
+  [linearModel.modelType]: linearModel,
+  [powerLawModel.modelType]: powerLawModel,
+  [rainbowChartModel.modelType]: rainbowChartModel,
+  [stockToFlowModel.modelType]: stockToFlowModel,
+  [stockToFlowModelNew.modelType]: stockToFlowModelNew,
+} as const;

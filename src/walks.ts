@@ -16,13 +16,13 @@ export const pingPong: IWalk = ({
   clampBottom = false,
   clampTop = false,
   start = 0,
-  startDay = 1,
+  startDay = 0,
   volatility = 0.07,
 }): number[] => {
   const data = [start];
   let currentValue = start;
 
-  for (let day = startDay; day <= startDay + LENGTH; day++) {
+  for (let day = startDay; day < LENGTH; day++) {
     const randomComponent = (Math.random() - 0.5) * volatility;
 
     switch (currentPingPongPhase) {
@@ -49,7 +49,7 @@ export const bubble: IWalk = ({
   clampBottom = false,
   clampTop = false,
   start = 0,
-  startDay = 1,
+  startDay = 0,
   volatility = 0.07,
 }): number[] => {
   const data = [start];
@@ -58,7 +58,7 @@ export const bubble: IWalk = ({
   let velocity = 0;
   const acceleration = 0.0005;
 
-  for (let day = startDay; day <= startDay + LENGTH; day++) {
+  for (let day = startDay; day < LENGTH; day++) {
     const randomComponent = (Math.random() - 0.5) * volatility;
 
     switch (currentPhase) {
@@ -93,13 +93,13 @@ export const random: IWalk = ({
   clampBottom = false,
   clampTop = false,
   start = 0,
-  startDay = 1,
+  startDay = 0,
   volatility = 0.07,
 }): number[] => {
   const data = [start];
   let currentValue = start;
 
-  for (let day = startDay; day <= startDay + LENGTH; day++) {
+  for (let day = startDay; day < LENGTH; day++) {
     const randomComponent = (Math.random() - 0.5) * volatility;
     currentValue += randomComponent;
     if (clampTop && currentValue > 1) currentValue = 1;
@@ -113,14 +113,14 @@ export const sinusoidal: IWalk = ({
   clampBottom = false,
   clampTop = false,
   start = 0.5,
-  startDay = 1,
+  startDay = 0,
   volatility = 0.07,
 }): number[] => {
   const data = [start];
   let currentValue = start;
   let delta = 0.01;
 
-  for (let day = startDay; day <= startDay + LENGTH; day++) {
+  for (let day = startDay; day < LENGTH; day++) {
     const randomComponent = (Math.random() - 0.5) * volatility;
     delta = 0.01 * Math.sin((2 * Math.PI * day) / LENGTH) + randomComponent;
     currentValue += delta;
@@ -135,13 +135,13 @@ export const shark: IWalk = ({
   clampBottom = false,
   clampTop = false,
   start = 0.5,
-  startDay = 1,
+  startDay = 0,
   volatility = 0.07,
 }): number[] => {
   const data = [start];
   let currentValue = start;
   let expoState = 1.05;
-  for (let day = startDay; day <= startDay + LENGTH; day++) {
+  for (let day = startDay; day < LENGTH; day++) {
     const randomComponent = (Math.random() - 0.5) * volatility;
 
     currentValue *= expoState;
@@ -167,7 +167,7 @@ export const momentumDrift: IWalk = ({
   clampBottom = false,
   clampTop = false,
   start = 0.5,
-  startDay = 1,
+  startDay = 0,
   volatility = 0.07,
 }): number[] => {
   const data = [start];
@@ -176,7 +176,7 @@ export const momentumDrift: IWalk = ({
   const momentumDecay = 0.9;
   const maxMomentum = 0.03;
 
-  for (let day = startDay; day <= startDay + LENGTH; day++) {
+  for (let day = startDay; day < LENGTH; day++) {
     const randomComponent = (Math.random() - 0.5) * volatility;
 
     // Update the momentum with decay and ensure it does not exceed maxMomentum
@@ -208,14 +208,14 @@ export const sawtooth: IWalk = ({
   clampBottom = false,
   clampTop = false,
   start = 0,
-  startDay = 1,
+  startDay = 0,
   volatility = 0.07,
 }): number[] => {
   const data = [start];
   let currentValue = start;
   let increment = 0.01;
 
-  for (let day = startDay; day <= startDay + LENGTH; day++) {
+  for (let day = startDay; day < LENGTH; day++) {
     const randomComponent = (Math.random() - 0.5) * volatility;
     increment = 0.01 + randomComponent;
 
@@ -241,20 +241,18 @@ export const USElections: IWalk = ({
   clampBottom = false,
   clampTop = false,
   start = 0,
-  startDay = 1,
+  startDay = 0,
   volatility = 0.07,
 }): number[] => {
   const data = [start];
   let currentValue = start;
   const decrement = 0.003;
 
-  for (let day = startDay; day <= startDay + LENGTH; day++) {
+  for (let day = startDay; day < LENGTH; day++) {
     const randomComponent = (Math.random() - 0.5) * volatility;
 
     currentValue -= randomComponent + decrement;
 
-    // Reset at the top and reflect at the bottom to ensure full range coverage
-    // Optionally clamp values if specified
     if (clampTop && currentValue > 1) currentValue = 1;
     if (clampBottom && currentValue < 0) currentValue = 0;
 
@@ -265,3 +263,14 @@ export const USElections: IWalk = ({
   }
   return data;
 };
+
+export const walks: Record<string, IWalk> = {
+  Bubble: bubble,
+  Momentum: momentumDrift,
+  Pong: pingPong,
+  Random: random,
+  Saw: sawtooth,
+  Shark: shark,
+  Sin: sinusoidal,
+  "Vote Counting": USElections,
+} as const;

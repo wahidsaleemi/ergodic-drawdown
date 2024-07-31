@@ -1,9 +1,12 @@
+// eslint-disable-next-line spaced-comment, @typescript-eslint/triple-slash-reference
+/// <reference types="vite-plugin-svgr/client" />
+
 // eslint-disable-next-line functional/no-mixed-types
 
 interface MinMaxOptions {
-  currentBitcoinBlock?: number;
-  currentBitcoinPrice?: number;
-  week?: number;
+  currentBitcoinBlock: number;
+  currentBitcoinPrice: number;
+  week: number;
 }
 
 // eslint-disable-next-line functional/no-mixed-types
@@ -23,6 +26,7 @@ export type HalvingData = Record<string, number>;
 export interface Dataset {
   backgroundColor?: string;
   borderColor?: string;
+  borderDash?: number[];
   borderWidth?: number;
   data: Array<{
     x: number;
@@ -36,3 +40,34 @@ export interface Dataset {
 }
 
 export type DatasetList = Dataset[];
+
+export type Data = Array<Array<{ x: number; y: number }>>;
+export type RawData = Array<{ close: number; time: number }>;
+
+export interface SimulationWorker {
+  clampBottom: boolean;
+  clampTop: boolean;
+  currentBlock: number;
+  currentPrice: number;
+  epochCount: number;
+  halvings: Record<number, number>;
+  model: string;
+  samples: number;
+  volatility: number;
+  walk: string;
+}
+
+export interface VolumeWorker {
+  bitcoin: number;
+  costOfLiving: number;
+  data: Data;
+  drawdownDate: number;
+  inflation: number;
+}
+
+export interface VolumeReturn {
+  average: number | undefined;
+  median: number;
+  volumeDataset: DatasetList;
+  zero: number;
+}

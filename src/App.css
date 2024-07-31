@@ -22,11 +22,6 @@
   gap: 10px;
 }
 
-.input {
-  width: 100%;
-  border: 1px solid red;
-}
-
 .input-row {
   display: flex;
   justify-content: space-between;
@@ -36,6 +31,7 @@
 
 .start {
   justify-content: flex-start;
+  align-items: baseline;
   gap: 5px;
 }
 
@@ -59,20 +55,25 @@ label {
   text-align: start;
   padding-left: 20px;
   font-size: x-large;
+  max-width: 72.5vw;
 }
 
 .wide {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  align-content: baseline;
+  border: 1px solid gray;
 }
 
 .wide > .input-row {
   flex: 0 1 ;
+  align-items: baseline;
 }
 
 .stats {
   white-space: wrap;
+  justify-content: center;
 }
 
 .angled-ribbon {
@@ -109,4 +110,37 @@ label {
 .legal {
   color: #333333;
   font-size: .5rem;
+}
+
+.loader {
+  border: 5px solid transparent;
+  border-top: 5px solid highlight;
+  border-radius: 50%;
+  width: 20px;
+  height: .9rem;
+  animation: spin 1s linear infinite;
+}
+
+.center-text {
+  display: flex;
+  justify-content: center;
+  min-height: 100px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.pay-me {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.pay-me > svg {
+  max-width: 30px;
+  max-height: 30px;
 }

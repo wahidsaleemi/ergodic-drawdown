@@ -31,3 +31,36 @@ Governing Law: These terms are governed by the laws of The United States without
 Changes to Terms: The website reserves the right to modify these terms at any time, and such modifications will be effective immediately upon posting the new terms.
 
 Severability: If any part of these terms is held invalid or unenforceable, that part will be construed to reflect the parties' original intent, and the remaining portions will remain in full force and effect.`;
+
+export const inputLabels = {
+  clampBottom: "Min:",
+  clampTop: "Clamp Price to Max:",
+  costOfLiving: "Yearly Expenses (USD):",
+  drawdownDate: "BTC drawdown starts:",
+  epoch: "Epoch Count (1-100):",
+  inflation: "Expected Annual Inflation (%):",
+  model: "Model:",
+  renderDrawdown: "Drawdown Walks:",
+  renderExpenses: "Expenses:",
+  renderModelMax: "Model Max:",
+  renderModelMin: "Model Min:",
+  renderNormal: "Normal Distribution:",
+  renderQuantile: "Quantile:",
+  renderWalk: "Price Walks:",
+  samples: "Statistical Sample Count (1k-10k):",
+  samplesToRender: "Walks to render",
+  totalBitcoin: "Bitcoin Holdings:",
+  vol: "Volatility (0-1):",
+  walk: "Walk Strategy:",
+};
+
+export const fieldLabels = {
+  drawdown: "Drawdown",
+  graph: "Visualization",
+  model: "Price Model",
+  render: "Render",
+};
+export const title = "Ergodic Bitcoin Drawdown via Monte Carlo Simulation";
+export const pay = "gildedpleb@getalby.com";
+export const distroColor = "rgba(0, 0, 255, 0.4)";
+export const quantileColor = "rgba(0, 255, 0, 0.1)";
