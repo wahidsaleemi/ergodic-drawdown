@@ -85,7 +85,11 @@ const volumeWorker = async (
   const average = sum / finalBalance.length;
 
   const sortedValues = finalBalance.sort((first, second) => first - second);
-  const median = quantile(sortedValues, 0.5);
+  const middleQuant = quantile(sortedValues, 0.5);
+  const median =
+    middleQuant === 0 && volumeDataset[0].data.length === 0
+      ? Number.NaN
+      : middleQuant;
   const volumeReturn = { average, median, volumeDataset, zero };
   signal.removeEventListener("abort", AbortAction);
   console.timeEnd("volume" + id);

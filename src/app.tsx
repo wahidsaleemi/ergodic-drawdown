@@ -74,7 +74,7 @@ const StochasticGraph = (): React.ReactNode => {
   const [normalDistribution, setNormalDistribution] = useState<DatasetList>([]);
   const [zero, setZero] = useState<number>(0);
   const [average, setAverage] = useState<number | undefined>();
-  const [median, setMedian] = useState<number>(0);
+  const [median, setMedian] = useState<number | undefined>();
   const [loadingPriceData, setLoadingPriceData] = useState<boolean>(true);
   const [loadingVolumeData, setLoadingVolumeData] = useState<boolean>(true);
   // Panel 1
@@ -448,20 +448,44 @@ const StochasticGraph = (): React.ReactNode => {
       volumeData,
     ],
   );
-  const using = priceData.length * priceData[0]?.length * 2;
+
+  const using = priceData.length * priceData[0]?.length;
+  const memoryUsageMB = (using * 3 * 40) / (1024 * 1024);
+
+  let memoryUsageClass = "";
+  if (memoryUsageMB > 1024) {
+    memoryUsageClass = "memory-high";
+  } else if (memoryUsageMB > 512) {
+    memoryUsageClass = "memory-medium";
+  }
+
+  const beginning = `(Roughly ${using.toLocaleString()} data points @`;
+  const mid = `${memoryUsageMB.toFixed(0)} MB`;
+  const end = `)`;
+
   const dataPointCount = loadingPriceData ? (
     <div className="loader" />
   ) : (
-    // TODO: Render this as yellow if above 250MB and as red if above 1GB
-    `(Roughly ${using.toLocaleString()} data points @ ${((using * 40) / (1024 * 1024)).toFixed(0)} MB RAM)`
+    <>
+      <span>{beginning}</span>
+      <span className={memoryUsageClass}>{mid}</span>
+      <span>{end}</span>
+    </>
   );
+
+  const expirationDate = priceWalkDatasets[0]?.data.at(-1);
+  const expired =
+    expirationDate === undefined
+      ? ""
+      : `by ${new Date(expirationDate.x).toDateString()}`;
+
   const escapeVelocity = useMemo(
     () =>
-      average === undefined || loadingVolumeData ? (
+      loadingVolumeData ? (
         <div className="loader" />
       ) : (
-        `${(100 - (zero / debouncedSamples) * 100).toFixed(2)}% chance of not exhausting bitcoin holdings
-        with an average of ${average.toFixed(4)} Bitcoin left (median ${median.toFixed(4)}),
+        `${(100 - (zero / debouncedSamples) * 100).toFixed(2)}% chance of not exhausting bitcoin holdings ${expired}
+        with an average of ${Number.isNaN(average) || average === undefined ? bitcoin : average.toFixed(4)} Bitcoin left (median ${Number.isNaN(median) || median === undefined ? bitcoin : median.toFixed(4)}),
         if drawing down weekly from a ${debouncedBitcoin} bitcoin balance,
         starting ${new Date(debouncedDrawdownDate).toDateString()},
         to meet $${debouncedCostOfLiving.toLocaleString()} of yearly costs (in todays dollars),
@@ -469,10 +493,12 @@ const StochasticGraph = (): React.ReactNode => {
         assuming ${debouncedModel} modeling and a ${debouncedWalk} walk strategy.`
       ),
     [
-      average,
       loadingVolumeData,
       zero,
       debouncedSamples,
+      expired,
+      average,
+      bitcoin,
       median,
       debouncedBitcoin,
       debouncedDrawdownDate,

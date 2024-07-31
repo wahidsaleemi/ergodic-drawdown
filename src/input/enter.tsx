@@ -3,7 +3,6 @@ import type React from "react";
 const handleEnterKey: React.KeyboardEventHandler<
   HTMLInputElement | HTMLSelectElement
 > = (event: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
-  console.log("hit a key ??", event.key);
   if (event.key === "Enter") {
     const target = event.target as HTMLInputElement | HTMLSelectElement;
 

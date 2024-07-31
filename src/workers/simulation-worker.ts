@@ -105,18 +105,14 @@ const simulationWorker = async (
     console.time("adjustment");
     previousAdjustPath = adjustPath;
     if (samples === data.length) {
-      const GTcurrant = data[0].length / WEEKS_PER_EPOCH > epochCount;
-      const LTnext = data[0].length / WEEKS_PER_EPOCH < epochCount + 1;
-      console.log({ GTcurrant, LTnext });
+      const GTcurrant = data[0].length / WEEKS_PER_EPOCH >= epochCount;
+      const LTnext = data[0].length / WEEKS_PER_EPOCH < epochCount;
       if (GTcurrant && LTnext) {
         console.timeEnd("adjustment");
         signal.removeEventListener("abort", AbortAction);
         return [id, data];
       } else if (GTcurrant && !LTnext) {
-        const last = -(
-          (Math.floor(data[0].length / WEEKS_PER_EPOCH) - epochCount) *
-          WEEKS_PER_EPOCH
-        );
+        const last = -(data[0].length - epochCount * WEEKS_PER_EPOCH);
         const newData = data.map((sample) => sample.slice(0, last));
         console.timeEnd("adjustment");
         signal.removeEventListener("abort", AbortAction);

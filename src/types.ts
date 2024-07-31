@@ -69,7 +69,7 @@ export interface VolumeWorker {
 }
 
 export interface VolumeReturn {
-  average: number | undefined;
+  average: number;
   median: number;
   volumeDataset: DatasetList;
   zero: number;

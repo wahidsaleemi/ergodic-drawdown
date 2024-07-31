@@ -144,3 +144,11 @@ label {
   max-width: 30px;
   max-height: 30px;
 }
+
+.memory-medium {
+  color: yellow; /* Color it yellow if memory usage is above 250MB */
+}
+
+.memory-high {
+  color: red; /* Color it red if memory usage is above 1GB */
+}
