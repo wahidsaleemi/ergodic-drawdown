@@ -115,3 +115,7 @@ export const quantile = (array: number[], percent: number): number => {
   if (id === Math.floor(id)) return (array[id] + array[id + 1]) / 2;
   return array[Math.ceil(id)];
 };
+
+// eslint-disable-next-line functional/functional-parameters
+export const timeout = async (): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, 0));

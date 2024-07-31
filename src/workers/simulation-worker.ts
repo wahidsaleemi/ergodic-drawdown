@@ -7,6 +7,7 @@ import { WEEKS_PER_EPOCH } from "../constants";
 import {
   applyModel,
   getStartingPriceNormalized,
+  timeout,
   weeksSinceLastHalving,
 } from "../helpers";
 import { modelMap } from "../models";
@@ -18,10 +19,6 @@ const signalState = { aborted: false };
 let previousSimPath = "";
 let previousAdjustPath = "";
 let data: Data = [];
-
-// eslint-disable-next-line functional/functional-parameters
-const timeout = async (): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, 0));
 
 const simulationWorker = async (
   simPath: string,

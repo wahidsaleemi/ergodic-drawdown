@@ -1,16 +1,10 @@
-// workers/volume-worker.ts
-
 import hashSum from "hash-sum";
 
 import { MS_PER_DAY, MS_PER_WEEK, WEEKS_PER_YEAR } from "../constants";
-import { generateColor, quantile } from "../helpers";
+import { generateColor, quantile, timeout } from "../helpers";
 import { type VolumeReturn, type VolumeWorker } from "../types";
 
 const signalState = { aborted: false };
-
-// eslint-disable-next-line functional/functional-parameters
-const timeout = async (): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, 0));
 
 const volumeWorker = async (
   { bitcoin, costOfLiving, data, drawdownDate, inflation }: VolumeWorker,

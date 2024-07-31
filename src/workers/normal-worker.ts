@@ -3,13 +3,10 @@
 import hashSum from "hash-sum";
 
 import { distroColor } from "../content";
+import { timeout } from "../helpers";
 import { type DatasetList } from "../types";
 
 const signalState = { aborted: false };
-
-// eslint-disable-next-line functional/functional-parameters
-const timeout = async (): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, 0));
 
 const normalDistributionWorker = async (
   volumeDataset: DatasetList,

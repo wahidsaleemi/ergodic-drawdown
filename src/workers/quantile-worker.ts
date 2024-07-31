@@ -1,14 +1,10 @@
 import hashSum from "hash-sum";
 
 import { quantileColor } from "../content";
-import { quantile } from "../helpers";
+import { quantile, timeout } from "../helpers";
 import { type DatasetList } from "../types";
 
 const signalState = { aborted: false };
-
-// eslint-disable-next-line functional/functional-parameters
-const timeout = async (): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, 0));
 
 const quantileWorker = async (
   volumeDataset: DatasetList,
