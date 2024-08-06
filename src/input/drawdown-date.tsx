@@ -6,12 +6,14 @@ import handleEnterKey from "./enter";
 // eslint-disable-next-line functional/no-mixed-types
 interface IDrawdownDateInput {
   drawdownDate: number;
+  now?: number;
   setDrawdownDate: (value: React.SetStateAction<number>) => void;
   setLoading: (value: React.SetStateAction<boolean>) => void;
 }
 
 const DrawdownDateInput = ({
   drawdownDate,
+  now,
   setDrawdownDate,
   setLoading,
 }: IDrawdownDateInput): JSX.Element => {
@@ -20,14 +22,14 @@ const DrawdownDateInput = ({
       (event) => {
         const date = new Date(event.target.value);
         const timestamp = Math.floor(date.getTime());
-        if (timestamp < Date.now()) {
-          setDrawdownDate(Date.now());
+        if (now !== undefined && timestamp < now) {
+          setDrawdownDate(now + 1_000_000);
         } else {
           setDrawdownDate(timestamp);
         }
         setLoading(true);
       },
-      [setDrawdownDate, setLoading],
+      [now, setDrawdownDate, setLoading],
     );
 
   const value = useMemo(
@@ -35,7 +37,11 @@ const DrawdownDateInput = ({
     [drawdownDate],
   );
 
-  const minDate = useMemo(() => new Date().toISOString().split("T")[0], []);
+  const minDate = useMemo(() => {
+    const currentDate = new Date();
+    currentDate.setDate(currentDate.getDate() + 1);
+    return currentDate.toISOString().split("T")[0];
+  }, []);
 
   return (
     <div className="input-row">

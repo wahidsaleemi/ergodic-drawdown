@@ -695,6 +695,7 @@ const StochasticGraph = (): React.ReactNode => {
           />
           <DrawdownDateInput
             drawdownDate={drawdownDate}
+            now={priceWalkDatasets[0]?.data[0]?.x}
             setDrawdownDate={setDrawdownDate}
             setLoading={semiLoading}
           />
