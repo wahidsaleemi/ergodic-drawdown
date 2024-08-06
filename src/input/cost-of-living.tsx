@@ -18,8 +18,6 @@ const CostOfLivingInput = ({
   const handleCostOfLiving: React.ChangeEventHandler<HTMLInputElement> =
     useCallback(
       (event) => {
-        console.log("hit cost of living", event.target.value);
-        console.log("Event timestamp:", event.timeStamp);
         const value = Number.parseFloat(event.target.value);
         if (value >= 0) {
           setCostOfLiving(value);

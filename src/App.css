@@ -35,6 +35,8 @@
 .start {
   justify-content: flex-start;
   gap: 0px 10px;
+  padding-left: 12px;
+  padding-right: 12px;
 }
 
 .select-model {
@@ -64,9 +66,21 @@
   flex-wrap: wrap;
   align-content: baseline;
   border: 1px solid gray;
+  flex-grow: 1;
+  align-self: stretch;
+}
+
+.short {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: baseline;
 }
 
 .wide > .input-row {
+  flex: 0 1 ;
+}
+
+.short > .input-row {
   flex: 0 1 ;
 }
 

@@ -30,7 +30,7 @@ const volumeWorker = async (
     (drawdownDate + MS_PER_DAY - now) / MS_PER_WEEK,
   );
   const iterations =
-    (data[0] ?? []).length - (drawdownDate - Date.now()) / MS_PER_WEEK;
+    (data[0] ?? []).length - (drawdownDate - now) / MS_PER_WEEK;
   const startDistro = new Date(drawdownDate);
   const weeklyInflationRate = (1 + inflation / 100) ** (1 / WEEKS_PER_YEAR) - 1;
 

@@ -9,7 +9,7 @@ interface IRenderDrawdown {
   setRenderDrawdown: (value: React.SetStateAction<boolean>) => void;
 }
 
-const RenderDrawdownInput = ({
+const RenderDrawdownWalksInput = ({
   renderDrawdown,
   setRenderDrawdown,
 }: IRenderDrawdown): JSX.Element => {
@@ -36,4 +36,4 @@ const RenderDrawdownInput = ({
   );
 };
 
-export default RenderDrawdownInput;
+export default RenderDrawdownWalksInput;

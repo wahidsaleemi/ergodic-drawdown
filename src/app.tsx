@@ -23,7 +23,7 @@ import {
   MS_PER_YEAR,
   WEEKS_PER_YEAR,
 } from "./constants";
-import { fieldLabels, legal, pay, title } from "./content";
+import { bitcoinColor, fieldLabels, legal, pay, title } from "./content";
 import useDebounce from "./debounce";
 import ForkUs from "./fork-us";
 import { generateColor, loadHalvings } from "./helpers";
@@ -34,22 +34,26 @@ import DrawdownDateInput from "./input/drawdown-date";
 import EpochInput from "./input/epoch";
 import InflationInput from "./input/inflation";
 import ModelInput from "./input/model";
-import RenderDrawdownInput from "./input/render-drawdown";
+import RenderDrawdownNormalInput from "./input/render-drawdown-normal";
+import RenderDrawdownQuantileInput from "./input/render-drawdown-quantile";
+import RenderDrawdownWalksInput from "./input/render-drawdown-walks";
 import RenderExpensesInput from "./input/render-expenses";
 import RenderModelMaxInput from "./input/render-model-max";
 import RenderModelMinInput from "./input/render-model-min";
-import RenderNormalInput from "./input/render-normal";
-import RenderQuantileInput from "./input/render-quantile";
+import RenderPriceNormalInput from "./input/render-price-noraml";
+import RenderPriceQuantileInput from "./input/render-price-quantile";
+import RenderPriceWalkInput from "./input/render-price-walks";
 import RenderSampleCount from "./input/render-sample-count";
-import RenderWalkInput from "./input/render-walk";
 import SampleInput from "./input/samples";
 import VolInput from "./input/volatility";
 import WalkInput from "./input/walk";
 import { modelMap, models } from "./models";
 import { type Data, type DatasetList } from "./types";
+import drawdownNormalDistributionWorker from "./workers/drawdown-normal-worker";
 import drawdownQuantileWorker from "./workers/drawdown-quantile-worker";
 import halvingWorker from "./workers/halving-worker";
-import normalDistributionWorker from "./workers/normal-worker";
+import priceNormalDistributionWorker from "./workers/price-normal-worker";
+import priceQuantileWorker from "./workers/price-quantile-worker";
 import simulationWorker from "./workers/simulation-worker";
 import volumeWorker from "./workers/volume-worker";
 
@@ -74,11 +78,11 @@ const StochasticGraph = (): React.ReactNode => {
 
   // State
   const [priceData, setPriceData] = useState<Data>([]);
+  const [priceQuantile, setPriceQuantile] = useState<DatasetList>([]);
+  const [priceNormal, setPriceNormal] = useState<DatasetList>([]);
   const [volumeData, setVolumeData] = useState<Data>([]);
-  const [quantileDistribution, setQuantileDistribution] = useState<DatasetList>(
-    [],
-  );
-  const [normalDistribution, setNormalDistribution] = useState<DatasetList>([]);
+  const [volumeQuantile, setVolumeQuantile] = useState<DatasetList>([]);
+  const [volumeNormal, setVolumeNormal] = useState<DatasetList>([]);
   const [zero, setZero] = useState<number>(0);
   const [average, setAverage] = useState<number | undefined>();
   const [median, setMedian] = useState<number | undefined>();
@@ -116,8 +120,18 @@ const StochasticGraph = (): React.ReactNode => {
   const debouncedDrawdownDate = useDebounce<number>(drawdownDate, 500);
 
   // Panel 3
-  const [renderWalk, setRenderWalk] = useState<boolean>(true);
-  const debouncedRenderWalk = useDebounce<boolean>(renderWalk, 300);
+  const [renderPriceWalks, setRenderPriceWalks] = useState<boolean>(false);
+  const debouncedRenderWalk = useDebounce<boolean>(renderPriceWalks, 300);
+  const [renderPriceQuantile, setRenderPriceQuantile] = useState<boolean>(true);
+  const debouncedRenderPriceQuantile = useDebounce<boolean>(
+    renderPriceQuantile,
+    300,
+  );
+  const [renderPriceNormal, setRenderPriceNormal] = useState<boolean>(false);
+  const debouncedRenderPriceNormal = useDebounce<boolean>(
+    renderPriceNormal,
+    300,
+  );
   const [renderDrawdown, setRenderDrawdown] = useState<boolean>(false);
   const debouncedRenderDrawdown = useDebounce<boolean>(renderDrawdown, 300);
   const [renderExpenses, setRenderExpenses] = useState<boolean>(true);
@@ -145,7 +159,7 @@ const StochasticGraph = (): React.ReactNode => {
 
   const interimDataset = useMemo(
     () => ({
-      borderColor: "rgb(246, 145, 50)",
+      borderColor: bitcoinColor,
       borderWidth: 0.5,
       data: interim.map((item) => ({
         x: item.time * 1000,
@@ -258,6 +272,48 @@ const StochasticGraph = (): React.ReactNode => {
           })),
     [priceData, debouncedSamplesToRender],
   );
+
+  useEffect(() => {
+    if (priceData.length === 0 || !debouncedRenderPriceQuantile) return;
+    const abortController = new AbortController();
+    const { signal } = abortController;
+
+    priceQuantileWorker(priceData, signal)
+      .then(([id, newData]) => {
+        if (signal.aborted || newData === undefined) {
+          console.log("Aborted price quantile not setting state....", id);
+        } else {
+          console.log("Setting price quantile state....", id);
+          setPriceQuantile(newData);
+        }
+        return "success";
+      })
+      .catch(console.error);
+    return () => {
+      abortController.abort();
+    };
+  }, [priceData, debouncedRenderPriceQuantile]);
+
+  useEffect(() => {
+    if (priceData.length === 0 || !debouncedRenderPriceNormal) return;
+    const abortController = new AbortController();
+    const { signal } = abortController;
+
+    priceNormalDistributionWorker(priceData, signal)
+      .then(([id, newData]) => {
+        if (signal.aborted || newData === undefined) {
+          console.log("Aborted price normal not setting state....", id);
+        } else {
+          console.log("Setting price normal state....", id);
+          setPriceNormal(newData);
+        }
+        return "success";
+      })
+      .catch(console.error);
+    return () => {
+      abortController.abort();
+    };
+  }, [priceData, debouncedRenderPriceNormal]);
 
   const minModelDataset = useMemo(() => {
     if (!debouncedRenderModelMin) return [];
@@ -382,13 +438,13 @@ const StochasticGraph = (): React.ReactNode => {
     const abortController = new AbortController();
     const { signal } = abortController;
 
-    normalDistributionWorker(volumeData, signal)
+    drawdownNormalDistributionWorker(volumeData, signal)
       .then(([id, newData]) => {
         if (signal.aborted || newData === undefined) {
-          console.log("Aborted normal not setting state....", id);
+          console.log("Aborted volume normal not setting state....", id);
         } else {
-          console.log("Setting normal state....", id);
-          setNormalDistribution(newData);
+          console.log("Setting volume normal state....", id);
+          setVolumeNormal(newData);
         }
         return "success";
       })
@@ -409,7 +465,7 @@ const StochasticGraph = (): React.ReactNode => {
           console.log("Aborted quantile not setting state....", id);
         } else {
           console.log("Setting quantile state....", id);
-          setQuantileDistribution(newData);
+          setVolumeQuantile(newData);
         }
         return "success";
       })
@@ -453,30 +509,36 @@ const StochasticGraph = (): React.ReactNode => {
           marketDataset,
           interimDataset,
           ...(debouncedRenderWalk ? priceWalkDatasets : []),
+          ...(debouncedRenderPriceQuantile ? priceQuantile : []),
           ...(debouncedRenderModelMin ? minModelDataset : []),
           ...(debouncedRenderModelMax ? maxModelDataset : []),
           ...(debouncedRenderDrawdown ? drawdownWalkDatasets : []),
-          ...(debouncedRenderQuantile ? quantileDistribution : []),
-          ...(debouncedRenderNormal ? normalDistribution : []),
+          ...(debouncedRenderQuantile ? volumeQuantile : []),
+          ...(debouncedRenderNormal ? volumeNormal : []),
           ...(debouncedRenderExpenses ? costOfLivingDataset : []),
+          ...(debouncedRenderPriceNormal ? priceNormal : []),
         ],
       }) satisfies { datasets: DatasetList },
     [
-      costOfLivingDataset,
-      debouncedRenderDrawdown,
-      debouncedRenderExpenses,
-      debouncedRenderModelMax,
-      debouncedRenderModelMin,
-      debouncedRenderNormal,
-      debouncedRenderQuantile,
-      debouncedRenderWalk,
-      drawdownWalkDatasets,
       interimDataset,
-      maxModelDataset,
-      minModelDataset,
-      normalDistribution,
+      debouncedRenderWalk,
       priceWalkDatasets,
-      quantileDistribution,
+      debouncedRenderPriceQuantile,
+      priceQuantile,
+      debouncedRenderModelMin,
+      minModelDataset,
+      debouncedRenderModelMax,
+      maxModelDataset,
+      debouncedRenderDrawdown,
+      drawdownWalkDatasets,
+      debouncedRenderQuantile,
+      volumeQuantile,
+      debouncedRenderNormal,
+      volumeNormal,
+      debouncedRenderExpenses,
+      costOfLivingDataset,
+      debouncedRenderPriceNormal,
+      priceNormal,
     ],
   );
 
@@ -614,15 +676,42 @@ const StochasticGraph = (): React.ReactNode => {
         </fieldset>
         <fieldset className="group">
           <legend>{fieldLabels.graph}</legend>
+
           <fieldset className="wide start">
-            <legend>{fieldLabels.render}</legend>
-            <RenderWalkInput
-              renderWalk={renderWalk}
-              setRenderWalk={setRenderWalk}
+            <legend>{fieldLabels.price}</legend>
+            <RenderPriceWalkInput
+              renderPriceWalks={renderPriceWalks}
+              setRenderPriceWalks={setRenderPriceWalks}
             />
-            <RenderDrawdownInput
+            <RenderPriceNormalInput
+              renderPriceNormal={renderPriceNormal}
+              setRenderPriceNormal={setRenderPriceNormal}
+            />
+            <RenderPriceQuantileInput
+              renderPriceQuantile={renderPriceQuantile}
+              setRenderPriceQuantile={setRenderPriceQuantile}
+            />
+          </fieldset>
+          <fieldset className="wide start">
+            <legend>{fieldLabels.drawdown}</legend>
+            <RenderDrawdownWalksInput
               renderDrawdown={renderDrawdown}
               setRenderDrawdown={setRenderDrawdown}
+            />
+            <RenderDrawdownNormalInput
+              renderNormal={renderNormal}
+              setRenderNormal={setRenderNormal}
+            />
+            <RenderDrawdownQuantileInput
+              renderQuantile={renderQuantile}
+              setRenderQuantile={setRenderQuantile}
+            />
+          </fieldset>
+          <div className="short start">
+            <RenderSampleCount
+              disabled={!(renderPriceWalks || renderDrawdown)}
+              samplesToRender={samplesToRender}
+              setSamplesToRender={setSamplesToRender}
             />
             <RenderExpensesInput
               renderExpenses={renderExpenses}
@@ -636,19 +725,7 @@ const StochasticGraph = (): React.ReactNode => {
               renderModelMin={renderModelMin}
               setRenderModelMin={setRenderModelMin}
             />
-            <RenderNormalInput
-              renderNormal={renderNormal}
-              setRenderNormal={setRenderNormal}
-            />
-            <RenderQuantileInput
-              renderQuantile={renderQuantile}
-              setRenderQuantile={setRenderQuantile}
-            />
-          </fieldset>
-          <RenderSampleCount
-            samplesToRender={samplesToRender}
-            setSamplesToRender={setSamplesToRender}
-          />
+          </div>
         </fieldset>
       </div>
       <div className="center-text">{escapeVelocity}</div>

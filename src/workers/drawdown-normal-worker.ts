@@ -8,12 +8,14 @@ import { type Data, type DatasetList } from "../types";
 
 const signalState = { aborted: false };
 
-const normalDistributionWorker = async (
+const NAME = "volume normal distribution";
+
+const drawdownNormalDistributionWorker = async (
   volumeDataset: Data,
   signal: AbortSignal,
 ): Promise<[string, DatasetList | undefined]> => {
   const id = hashSum(Math.random());
-  console.time("normal" + id);
+  console.time(NAME + id);
   signalState.aborted = false;
 
   // eslint-disable-next-line functional/functional-parameters
@@ -32,31 +34,33 @@ const normalDistributionWorker = async (
     if (index % 50 === 0) await timeout();
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (signalState.aborted) {
-      console.timeEnd("normal" + id);
+      console.timeEnd(NAME + id);
       return [id, undefined];
     } else {
-      // console.log("loop quantile");
+      // console.log("loop normal");
     }
-    for (const point of innerArray) {
-      if (!(point.x in groupedData)) {
-        groupedData[point.x] = [];
-      }
-      groupedData[point.x].push(point.y);
+    for (const { x, y } of innerArray) {
+      if (!(x in groupedData)) groupedData[x] = [];
+      groupedData[x].push(y);
     }
   }
-  const statsData: Record<number, { mean: number; stdDev: number }> = {};
-  for (const [x, values] of Object.entries(groupedData) as unknown as Array<
-    [number, number[]]
-  >) {
+
+  const meanData = [];
+  const upperData = [];
+  const lowerData = [];
+
+  for (const [x, values] of Object.entries(groupedData)) {
     index++;
     if (index % 50 === 0) await timeout();
+
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (signalState.aborted) {
-      console.timeEnd("normal" + id);
+      console.timeEnd(NAME + id);
       return [id, undefined];
     } else {
-      // console.log("loop quantile");
+      // console.log("loop normal");
     }
+
     let sum = 0;
     let sumOfSquares = 0;
     const count = values.length;
@@ -68,31 +72,14 @@ const normalDistributionWorker = async (
 
     const mean = sum / count;
     const variance = sumOfSquares / count - mean * mean;
-
-    statsData[x] = { mean, stdDev: Math.sqrt(variance) };
-  }
-
-  const meanData = [];
-  const upperData = [];
-  const lowerData = [];
-
-  for (const x of Object.keys(statsData)) {
-    index++;
-    if (index % 50 === 0) await timeout();
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (signalState.aborted) {
-      console.timeEnd("normal" + id);
-      return [id, undefined];
-    } else {
-      // console.log("loop quantile");
-    }
+    const standardDeviation = Math.sqrt(variance);
     const date = Number.parseInt(x, 10);
-    const { mean, stdDev } = statsData[date];
 
     meanData.push({ x: date, y: mean });
-    upperData.push({ x: date, y: mean + stdDev });
-    lowerData.push({ x: date, y: mean - stdDev });
+    upperData.push({ x: date, y: mean + standardDeviation });
+    lowerData.push({ x: date, y: mean - standardDeviation });
   }
+
   const finalData = [
     {
       borderColor: "blue",
@@ -127,8 +114,8 @@ const normalDistributionWorker = async (
     },
   ];
   signal.removeEventListener("abort", AbortAction);
-  console.timeEnd("normal" + id);
+  console.timeEnd(NAME + id);
   return [id, finalData];
 };
 
-export default normalDistributionWorker;
+export default drawdownNormalDistributionWorker;

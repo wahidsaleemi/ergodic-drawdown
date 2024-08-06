@@ -2,16 +2,16 @@
 /* eslint-disable security/detect-object-injection */
 import hashSum from "hash-sum";
 
-import { quantileColor } from "../content";
+import { bitcoinColor, priceQuantileColor } from "../content";
 import { quantile, timeout } from "../helpers";
 import { type Data, type DatasetList } from "../types";
 
 const signalState = { aborted: false };
 
-const NAME = "volume quantile";
+const NAME = "price quantile";
 
-const quantileWorker = async (
-  volumeDataset: Data,
+const priceQuantileWorker = async (
+  priceDataset: Data,
   signal: AbortSignal,
 ): Promise<[string, DatasetList | undefined]> => {
   const id = hashSum(Math.random());
@@ -29,7 +29,7 @@ const quantileWorker = async (
 
   const groupedData: Record<number, number[]> = {};
   let index = 0;
-  for (const innerArray of volumeDataset) {
+  for (const innerArray of priceDataset) {
     index++;
     if (index % 50 === 0) await timeout();
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -37,7 +37,7 @@ const quantileWorker = async (
       console.timeEnd(NAME + id);
       return [id, undefined];
     } else {
-      // console.log("loop quantile");
+      // console.log("loop price quantile 1");
     }
     for (const { x, y } of innerArray) {
       if (!(x in groupedData)) groupedData[x] = [];
@@ -80,95 +80,86 @@ const quantileWorker = async (
 
   const finalData = [
     {
-      backgroundColor: quantileColor,
+      backgroundColor: priceQuantileColor,
       borderWidth: 0,
       data: q000,
       fill: "+4",
-      label: "Lowest Sampled Bitcoin Remaining",
+      label: "Lowest Sampled Bitcoin Price",
       pointRadius: 0,
       tension: 0,
-      yAxisID: "y1",
     },
     {
-      backgroundColor: quantileColor,
+      backgroundColor: priceQuantileColor,
       borderWidth: 0,
       data: q001,
       fill: "+3",
-      label: "1st Percentile Bitcoin Remaining",
+      label: "1st Percentile Bitcoin Price",
       pointRadius: 0,
       tension: 0,
-      yAxisID: "y1",
     },
     {
-      backgroundColor: quantileColor,
+      backgroundColor: priceQuantileColor,
       borderWidth: 0,
       data: q005,
       fill: "+2",
-      label: "5th Percentile Bitcoin Remaining",
+      label: "5th Percentile Bitcoin Price",
       pointRadius: 0,
       tension: 0,
-      yAxisID: "y1",
     },
     {
-      backgroundColor: quantileColor,
+      backgroundColor: priceQuantileColor,
       borderWidth: 0,
       data: q025,
       fill: "+1",
-      label: "25th Percentile Bitcoin Remaining",
+      label: "25th Percentile Bitcoin Price",
       pointRadius: 0,
       tension: 0,
-      yAxisID: "y1",
     },
     {
-      borderColor: "green",
+      borderColor: bitcoinColor,
       borderDash: [15, 5],
-      borderWidth: 2,
+      borderWidth: 1,
       data: medianData,
       fill: false,
-      label: "Median Bitcoin Remaining",
+      label: "Median Bitcoin Price",
       pointRadius: 0,
       tension: 0,
-      yAxisID: "y1",
     },
     {
-      backgroundColor: quantileColor,
+      backgroundColor: priceQuantileColor,
       borderWidth: 0,
       data: q075,
       fill: "-1",
-      label: "75th Percentile Bitcoin Remaining",
+      label: "75th Percentile Bitcoin Price",
       pointRadius: 0,
       tension: 0,
-      yAxisID: "y1",
     },
     {
-      backgroundColor: quantileColor,
+      backgroundColor: priceQuantileColor,
       borderWidth: 0,
       data: q095,
       fill: "-2",
-      label: "95th Percentile Bitcoin Remaining",
+      label: "95th Percentile Bitcoin Price",
       pointRadius: 0,
       tension: 0,
-      yAxisID: "y1",
     },
     {
-      backgroundColor: quantileColor,
+      backgroundColor: priceQuantileColor,
       borderWidth: 0,
       data: q099,
       fill: "-3",
-      label: "99th Percentile Bitcoin Remaining",
+      label: "99th Percentile Bitcoin Price",
       pointRadius: 0,
       tension: 0,
-      yAxisID: "y1",
     },
     {
-      backgroundColor: quantileColor,
+      backgroundColor: priceQuantileColor,
       borderWidth: 0,
       data: q100,
       fill: "-4",
-      label: "Highest Sampled Bitcoin Remaining",
+      label: "Highest Sampled Bitcoin Price",
       pointRadius: 0,
       tension: 0,
-      yAxisID: "y1",
     },
   ];
   signal.removeEventListener("abort", AbortAction);
@@ -176,4 +167,4 @@ const quantileWorker = async (
   return [id, finalData];
 };
 
-export default quantileWorker;
+export default priceQuantileWorker;

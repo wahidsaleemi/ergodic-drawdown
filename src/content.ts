@@ -40,15 +40,16 @@ export const inputLabels = {
   epoch: "Epoch Count (1-100):",
   inflation: "Expected Annual Inflation (%):",
   model: "Model:",
-  renderDrawdown: "Drawdown Walks:",
+  renderDrawdown: "Walks:",
   renderExpenses: "Expenses:",
   renderModelMax: "Model Max:",
   renderModelMin: "Model Min:",
-  renderNormal: "Normal Distribution:",
+  renderNormal: "Std Dev:",
   renderQuantile: "Quantile:",
-  renderWalk: "Price Walks:",
+  renderWalk: "Walks:",
+  renderWalkQuantile: "Quantile:",
   samples: "Statistical Sample Count (1k-10k):",
-  samplesToRender: "Walks to render",
+  samplesToRender: "Walk count:",
   totalBitcoin: "Bitcoin Holdings:",
   vol: "Volatility (0-1):",
   walk: "Walk Strategy:",
@@ -58,9 +59,13 @@ export const fieldLabels = {
   drawdown: "Drawdown",
   graph: "Visualization",
   model: "Price Model",
+  price: "Price",
   render: "Render",
 };
 export const title = "Ergodic Bitcoin Drawdown via Monte Carlo Simulation";
 export const pay = "gildedpleb@getalby.com";
 export const distroColor = "rgba(0, 0, 255, 0.4)";
+export const priceDistroColor = "rgba(255, 255, 0, 0.4)";
 export const quantileColor = "rgba(0, 255, 0, 0.1)";
+export const priceQuantileColor = "rgba(246, 145, 50, 0.1)";
+export const bitcoinColor = "rgb(246, 145, 50)";

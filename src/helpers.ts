@@ -63,12 +63,14 @@ export const getStartingPriceNormalized = ({
   return (currentPrice - min) / (max - min);
 };
 
+const now = Date.now();
+
 export const applyModel = ({
   currentBlock = 0,
   currentPrice = 50_000,
   model,
   normalizedPrices,
-  startDate = Date.now(),
+  startDate = now,
   startIndex = 0,
   variable,
 }: ApplyModel): Array<{ x: number; y: number }> =>
