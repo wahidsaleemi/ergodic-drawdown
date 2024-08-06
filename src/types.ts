@@ -93,7 +93,7 @@ export interface VolumeWorker {
 export interface VolumeReturn {
   average: number;
   median: number;
-  volumeDataset: DatasetList;
+  volumeDataset: Data;
   zero: number;
 }
 // eslint-disable-next-line functional/functional-parameters

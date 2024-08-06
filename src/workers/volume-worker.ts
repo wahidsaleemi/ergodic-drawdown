@@ -1,8 +1,8 @@
 import hashSum from "hash-sum";
 
 import { MS_PER_DAY, MS_PER_WEEK, WEEKS_PER_YEAR } from "../constants";
-import { generateColor, quantile, timeout } from "../helpers";
-import { type VolumeReturn, type VolumeWorker } from "../types";
+import { quantile, timeout } from "../helpers";
+import { type Data, type VolumeReturn, type VolumeWorker } from "../types";
 
 const signalState = { aborted: false };
 
@@ -34,7 +34,7 @@ const volumeWorker = async (
   const startDistro = new Date(drawdownDate);
   const weeklyInflationRate = (1 + inflation / 100) ** (1 / WEEKS_PER_YEAR) - 1;
 
-  const volumeDataset = [];
+  const volumeDataset: Data = [];
   let index = 0;
   for (const graph of data) {
     if (index % 50 === 0) await timeout();
@@ -63,20 +63,10 @@ const volumeWorker = async (
       dataArray.push({ x, y });
     }
 
-    const dataSet = {
-      borderColor: generateColor(index),
-      borderWidth: 1,
-      data: dataArray,
-      label: `BTC Amount (${index})`,
-      pointRadius: 0,
-      tension: 0,
-      yAxisID: "y1",
-    };
-
-    const last = dataSet.data.at(-1);
+    const last = dataArray.at(-1);
     if (last !== undefined && last.y <= 0) zero += 1;
     if (last !== undefined) finalBalance.push(last.y);
-    volumeDataset.push(dataSet);
+    volumeDataset.push(dataArray);
     index++;
   }
 
@@ -87,7 +77,7 @@ const volumeWorker = async (
   const sortedValues = finalBalance.sort((first, second) => first - second);
   const middleQuant = quantile(sortedValues, 0.5);
   const median =
-    middleQuant === 0 && volumeDataset[0].data.length === 0
+    middleQuant === 0 && volumeDataset[0].length === 0
       ? Number.NaN
       : middleQuant;
   const volumeReturn = { average, median, volumeDataset, zero };

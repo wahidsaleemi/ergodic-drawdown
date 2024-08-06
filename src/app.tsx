@@ -47,9 +47,9 @@ import VolInput from "./input/volatility";
 import WalkInput from "./input/walk";
 import { modelMap, models } from "./models";
 import { type Data, type DatasetList } from "./types";
+import drawdownQuantileWorker from "./workers/drawdown-quantile-worker";
 import halvingWorker from "./workers/halving-worker";
 import normalDistributionWorker from "./workers/normal-worker";
-import quantileWorker from "./workers/quantile-worker";
 import simulationWorker from "./workers/simulation-worker";
 import volumeWorker from "./workers/volume-worker";
 
@@ -74,7 +74,7 @@ const StochasticGraph = (): React.ReactNode => {
 
   // State
   const [priceData, setPriceData] = useState<Data>([]);
-  const [volumeData, setVolumeData] = useState<DatasetList>([]);
+  const [volumeData, setVolumeData] = useState<Data>([]);
   const [quantileDistribution, setQuantileDistribution] = useState<DatasetList>(
     [],
   );
@@ -361,6 +361,22 @@ const StochasticGraph = (): React.ReactNode => {
     priceData,
   ]);
 
+  const drawdownWalkDatasets: DatasetList = useMemo(
+    () =>
+      debouncedSamplesToRender === undefined
+        ? []
+        : volumeData.slice(0, debouncedSamplesToRender).map((graph, index) => ({
+            borderColor: generateColor(index),
+            borderWidth: 1,
+            data: graph,
+            label: `BTC Amount (${index})`,
+            pointRadius: 0,
+            tension: 0,
+            yAxisID: "y1",
+          })),
+    [debouncedSamplesToRender, volumeData],
+  );
+
   useEffect(() => {
     if (volumeData.length === 0 || !debouncedRenderNormal) return;
     const abortController = new AbortController();
@@ -387,7 +403,7 @@ const StochasticGraph = (): React.ReactNode => {
     const abortController = new AbortController();
     const { signal } = abortController;
 
-    quantileWorker(volumeData, signal)
+    drawdownQuantileWorker(volumeData, signal)
       .then(([id, newData]) => {
         if (signal.aborted || newData === undefined) {
           console.log("Aborted quantile not setting state....", id);
@@ -439,9 +455,7 @@ const StochasticGraph = (): React.ReactNode => {
           ...(debouncedRenderWalk ? priceWalkDatasets : []),
           ...(debouncedRenderModelMin ? minModelDataset : []),
           ...(debouncedRenderModelMax ? maxModelDataset : []),
-          ...(debouncedRenderDrawdown
-            ? volumeData.slice(0, debouncedSamplesToRender)
-            : []),
+          ...(debouncedRenderDrawdown ? drawdownWalkDatasets : []),
           ...(debouncedRenderQuantile ? quantileDistribution : []),
           ...(debouncedRenderNormal ? normalDistribution : []),
           ...(debouncedRenderExpenses ? costOfLivingDataset : []),
@@ -456,14 +470,13 @@ const StochasticGraph = (): React.ReactNode => {
       debouncedRenderNormal,
       debouncedRenderQuantile,
       debouncedRenderWalk,
-      debouncedSamplesToRender,
+      drawdownWalkDatasets,
       interimDataset,
       maxModelDataset,
       minModelDataset,
       normalDistribution,
       priceWalkDatasets,
       quantileDistribution,
-      volumeData,
     ],
   );
 

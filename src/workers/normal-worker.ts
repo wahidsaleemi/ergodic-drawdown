@@ -4,12 +4,12 @@ import hashSum from "hash-sum";
 
 import { distroColor } from "../content";
 import { timeout } from "../helpers";
-import { type DatasetList } from "../types";
+import { type Data, type DatasetList } from "../types";
 
 const signalState = { aborted: false };
 
 const normalDistributionWorker = async (
-  volumeDataset: DatasetList,
+  volumeDataset: Data,
   signal: AbortSignal,
 ): Promise<[string, DatasetList | undefined]> => {
   const id = hashSum(Math.random());
@@ -37,7 +37,7 @@ const normalDistributionWorker = async (
     } else {
       // console.log("loop quantile");
     }
-    for (const point of innerArray.data) {
+    for (const point of innerArray) {
       if (!(point.x in groupedData)) {
         groupedData[point.x] = [];
       }
