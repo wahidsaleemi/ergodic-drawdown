@@ -68,10 +68,14 @@ const marketDataset = {
   tension: 0,
 };
 
+const loadedHalvings = loadHalvings();
+
 const defaultHalving = {
   currentBlock: 0,
-  halvings: loadHalvings(),
+  halvings: loadedHalvings,
 };
+
+const reward = 50 / 2 ** Object.keys(loadedHalvings).length;
 
 const DEBOUNCE = 200;
 
@@ -110,7 +114,7 @@ const StochasticGraph = (): React.ReactNode => {
   const debouncedEpoch = useDebounce<number>(epochCount, DEBOUNCE);
 
   // Panel 2
-  const [bitcoin, setBitcoin] = useState<number>(3.125);
+  const [bitcoin, setBitcoin] = useState<number>(reward);
   const debouncedBitcoin = useDebounce<number>(bitcoin, DEBOUNCE);
   const [costOfLiving, setCostOfLiving] = useState<number>(100_000);
   const debouncedCostOfLiving = useDebounce<number>(costOfLiving, DEBOUNCE);
