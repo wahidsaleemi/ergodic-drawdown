@@ -77,7 +77,7 @@ const priceNormalDistributionWorker = async (
 
     meanData.push({ x: date, y: mean });
     upperData.push({ x: date, y: mean + standardDeviation });
-    lowerData.push({ x: date, y: mean - standardDeviation });
+    lowerData.push({ x: date, y: Math.max(mean - standardDeviation, 0.0001) });
   }
 
   const finalData = [

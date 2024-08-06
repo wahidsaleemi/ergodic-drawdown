@@ -73,6 +73,8 @@ const defaultHalving = {
   halvings: loadHalvings(),
 };
 
+const DEBOUNCE = 200;
+
 const StochasticGraph = (): React.ReactNode => {
   console.time("one render");
 
@@ -91,65 +93,80 @@ const StochasticGraph = (): React.ReactNode => {
 
   // Panel 1
   const [model, setModel] = useState<string>(models[2].modelType);
-  const debouncedModel = useDebounce<string>(model, 300);
+  const debouncedModel = useDebounce<string>(model, DEBOUNCE);
   const [variable, setVariable] = useState<number>(0);
-  const debouncedVariable = useDebounce<number>(variable, 300);
+  const debouncedVariable = useDebounce<number>(variable, DEBOUNCE);
   const [walk, setWalk] = useState<string>("Bubble");
-  const debouncedWalk = useDebounce<string>(walk, 300);
+  const debouncedWalk = useDebounce<string>(walk, DEBOUNCE);
   const [clampTop, setClampTop] = useState<boolean>(false);
-  const debouncedClampTop = useDebounce<boolean>(clampTop, 300);
+  const debouncedClampTop = useDebounce<boolean>(clampTop, DEBOUNCE);
   const [clampBottom, setClampBottom] = useState<boolean>(false);
-  const debouncedClampBottom = useDebounce<boolean>(clampBottom, 300);
+  const debouncedClampBottom = useDebounce<boolean>(clampBottom, DEBOUNCE);
   const [volatility, setVolatility] = useState<number>(0.1);
-  const debouncedVolatility = useDebounce<number>(volatility, 300);
+  const debouncedVolatility = useDebounce<number>(volatility, DEBOUNCE);
   const [samples, setSamples] = useState<number>(1000);
-  const debouncedSamples = useDebounce<number>(samples, 300);
+  const debouncedSamples = useDebounce<number>(samples, DEBOUNCE);
   const [epochCount, setEpochCount] = useState<number>(10);
-  const debouncedEpoch = useDebounce<number>(epochCount, 300);
+  const debouncedEpoch = useDebounce<number>(epochCount, DEBOUNCE);
 
   // Panel 2
   const [bitcoin, setBitcoin] = useState<number>(3.125);
-  const debouncedBitcoin = useDebounce<number>(bitcoin, 300);
+  const debouncedBitcoin = useDebounce<number>(bitcoin, DEBOUNCE);
   const [costOfLiving, setCostOfLiving] = useState<number>(100_000);
-  const debouncedCostOfLiving = useDebounce<number>(costOfLiving, 300);
+  const debouncedCostOfLiving = useDebounce<number>(costOfLiving, DEBOUNCE);
   const [inflation, setInflation] = useState<number>(8);
-  const debouncedInflation = useDebounce<number>(inflation, 300);
+  const debouncedInflation = useDebounce<number>(inflation, DEBOUNCE);
   const [drawdownDate, setDrawdownDate] = useState(
     Date.now() + 8 * MS_PER_YEAR,
   );
-  const debouncedDrawdownDate = useDebounce<number>(drawdownDate, 500);
+  const debouncedDrawdownDate = useDebounce<number>(drawdownDate, DEBOUNCE);
 
   // Panel 3
   const [renderPriceWalks, setRenderPriceWalks] = useState<boolean>(false);
-  const debouncedRenderWalk = useDebounce<boolean>(renderPriceWalks, 300);
+  const debouncedRenderWalk = useDebounce<boolean>(renderPriceWalks, DEBOUNCE);
   const [renderPriceQuantile, setRenderPriceQuantile] = useState<boolean>(true);
   const debouncedRenderPriceQuantile = useDebounce<boolean>(
     renderPriceQuantile,
-    300,
+    DEBOUNCE,
   );
   const [renderPriceNormal, setRenderPriceNormal] = useState<boolean>(false);
   const debouncedRenderPriceNormal = useDebounce<boolean>(
     renderPriceNormal,
-    300,
+    DEBOUNCE,
   );
   const [renderDrawdown, setRenderDrawdown] = useState<boolean>(false);
-  const debouncedRenderDrawdown = useDebounce<boolean>(renderDrawdown, 300);
+  const debouncedRenderDrawdown = useDebounce<boolean>(
+    renderDrawdown,
+    DEBOUNCE,
+  );
   const [renderExpenses, setRenderExpenses] = useState<boolean>(true);
-  const debouncedRenderExpenses = useDebounce<boolean>(renderExpenses, 300);
+  const debouncedRenderExpenses = useDebounce<boolean>(
+    renderExpenses,
+    DEBOUNCE,
+  );
   const [renderModelMax, setRenderModelMax] = useState<boolean>(true);
-  const debouncedRenderModelMax = useDebounce<boolean>(renderModelMax, 300);
+  const debouncedRenderModelMax = useDebounce<boolean>(
+    renderModelMax,
+    DEBOUNCE,
+  );
   const [renderModelMin, setRenderModelMin] = useState<boolean>(true);
-  const debouncedRenderModelMin = useDebounce<boolean>(renderModelMin, 300);
+  const debouncedRenderModelMin = useDebounce<boolean>(
+    renderModelMin,
+    DEBOUNCE,
+  );
   const [renderNormal, setRenderNormal] = useState<boolean>(false);
-  const debouncedRenderNormal = useDebounce<boolean>(renderNormal, 300);
+  const debouncedRenderNormal = useDebounce<boolean>(renderNormal, DEBOUNCE);
   const [renderQuantile, setRenderQuantile] = useState<boolean>(true);
-  const debouncedRenderQuantile = useDebounce<boolean>(renderQuantile, 300);
+  const debouncedRenderQuantile = useDebounce<boolean>(
+    renderQuantile,
+    DEBOUNCE,
+  );
   const [samplesToRender, setSamplesToRender] = useState<number | undefined>(
-    isMobile() ? 1 : 9,
+    isMobile() ? 1 : 10,
   );
   const debouncedSamplesToRender = useDebounce<number | undefined>(
     samplesToRender,
-    300,
+    DEBOUNCE,
   );
 
   const { data: interim = [] } = useQuery({

@@ -1,6 +1,5 @@
 Things to do:
 
-- add a quantile probability cone around price walks.
 - add expected halving dates
 - add some kind of FAQ/ToolTip/Explainer
 - When calendar is set to today, its still fucked up a bit.
@@ -10,4 +9,3 @@ Things to do:
 - Fix the bug that is present on the Random Walk where values below 0 never line up when using calculate the price amount thing only occures when you increase the epoch length
 - when you force a rerender (maybe on ctl+s) it adds another epoch
 - when you toggle the render, it should clear the dataset.
-- shorten the debounce
