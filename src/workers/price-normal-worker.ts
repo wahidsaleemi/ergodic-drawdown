@@ -90,6 +90,8 @@ const priceNormalDistributionWorker = async (
       label: "Mean Price",
       pointRadius: 0,
       tension: 0,
+      // Needed because it might put this on another axis.
+      yAxisID: "y",
     },
     {
       backgroundColor: priceDistroColor,
@@ -99,6 +101,7 @@ const priceNormalDistributionWorker = async (
       label: "1 Standard Deviation",
       pointRadius: 0,
       tension: 0,
+      yAxisID: "y",
     },
     {
       backgroundColor: priceDistroColor,
@@ -108,6 +111,7 @@ const priceNormalDistributionWorker = async (
       label: "1 Standard Deviation",
       pointRadius: 0,
       tension: 0,
+      yAxisID: "y",
     },
   ];
   signal.removeEventListener("abort", AbortAction);

@@ -253,6 +253,10 @@ const StochasticGraph = (): React.ReactNode => {
         } else {
           console.log("Setting price state....", id);
           setPriceData(newData);
+          if (!debouncedRenderPriceNormal) setPriceNormal([]);
+          if (!debouncedRenderPriceQuantile) setPriceQuantile([]);
+          if (!debouncedRenderQuantile) setVolumeQuantile([]);
+          if (!debouncedRenderNormal) setVolumeNormal([]);
           setLoadingPriceData(false);
         }
         return "success";
@@ -261,6 +265,7 @@ const StochasticGraph = (): React.ReactNode => {
     return () => {
       abortController.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     currentBlock,
     currentPrice,
@@ -418,6 +423,8 @@ const StochasticGraph = (): React.ReactNode => {
           setZero(newData.zero);
           setAverage(newData.average);
           setMedian(newData.median);
+          if (!debouncedRenderQuantile) setVolumeQuantile([]);
+          if (!debouncedRenderNormal) setVolumeNormal([]);
           setLoadingVolumeData(false);
         }
         return "success";
@@ -426,6 +433,7 @@ const StochasticGraph = (): React.ReactNode => {
     return () => {
       abortController.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     debouncedBitcoin,
     debouncedCostOfLiving,
