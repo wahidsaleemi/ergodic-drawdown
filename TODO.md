@@ -1,5 +1,10 @@
 Things to do:
 
-- add model input adjustments: 6 year offset for power law, essnetially we want to be able to adjust the dif between top and bottom for all models
 - add a quantile probability cone around price walks.
 - add expected halving dates
+- add some kind of FAQ/ToolTip/Explainer
+- When calendar is set to today, its still fucked up a bit.
+- Figure out a way to persist user settings that is private and that can not be "hacked"
+- Figure out a way to share the settings in a link.
+- Add a TODAY annotation that deliniates a seperation between past and future.
+- Fix the bug that is present on the Random Walk where values below 0 never line up when using calculate the price amount thing only occures when you increase the epoch length

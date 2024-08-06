@@ -32,6 +32,7 @@ const simulationWorker = async (
     halvings,
     model,
     samples,
+    variable,
     volatility,
     walk,
   }: SimulationWorker,
@@ -58,12 +59,12 @@ const simulationWorker = async (
     previousSimPath = simPath;
     console.time("simulation" + id);
     const graphs: Data = [];
-    const startingPrice = getStartingPriceNormalized(
-      mapped,
-      currentPrice,
-      undefined,
+    const startingPrice = getStartingPriceNormalized({
       currentBlock,
-    );
+      currentPrice,
+      model: mapped,
+      variable,
+    });
     for (let index = 0; index < samples; index++) {
       let innerGraph: number[] = [];
       if (index % 50 === 0) await timeout();
@@ -86,14 +87,13 @@ const simulationWorker = async (
         innerGraph = innerGraph.concat(stuff);
       }
       graphs.push(
-        applyModel(
-          innerGraph,
-          mapped,
-          undefined,
-          undefined,
+        applyModel({
           currentBlock,
           currentPrice,
-        ),
+          model: mapped,
+          normalizedPrices: innerGraph,
+          variable,
+        }),
       );
     }
     console.timeEnd("simulation" + id);
@@ -126,12 +126,13 @@ const simulationWorker = async (
           let newEpoch = walking({
             clampBottom,
             clampTop,
-            start: getStartingPriceNormalized(
-              mapped,
-              sample.at(-1)?.y ?? currentPrice,
-              sample.length,
+            start: getStartingPriceNormalized({
               currentBlock,
-            ),
+              currentPrice: sample.at(-1)?.y ?? currentPrice,
+              model: mapped,
+              variable,
+              week: sample.length,
+            }),
             startDay: sample.length === 0 ? lastHalving : 1,
             volatility,
           });
@@ -155,14 +156,15 @@ const simulationWorker = async (
             });
             newEpoch = newEpoch.concat(newWalk);
           }
-          const modelApplied = applyModel(
-            newEpoch,
-            mapped,
-            sample.at(-1)?.x,
-            sample.length,
+          const modelApplied = applyModel({
             currentBlock,
             currentPrice,
-          );
+            model: mapped,
+            normalizedPrices: newEpoch,
+            startDate: sample.at(-1)?.x,
+            startIndex: sample.length,
+            variable,
+          });
           const newSample = sample.concat(modelApplied);
           newData.push(newSample);
         }
@@ -173,12 +175,12 @@ const simulationWorker = async (
       }
     } else if (samples > data.length) {
       const additionalData: Data = [];
-      const startingPrice = getStartingPriceNormalized(
-        mapped,
-        currentPrice,
-        undefined,
+      const startingPrice = getStartingPriceNormalized({
         currentBlock,
-      );
+        currentPrice,
+        model: mapped,
+        variable,
+      });
 
       for (let index = data.length; index < samples; index++) {
         if (index % 50 === 0) await timeout();
@@ -201,14 +203,13 @@ const simulationWorker = async (
           innerGraph = innerGraph.concat(stuff);
         }
         additionalData.push(
-          applyModel(
-            innerGraph,
-            mapped,
-            undefined,
-            undefined,
+          applyModel({
             currentBlock,
             currentPrice,
-          ),
+            model: mapped,
+            normalizedPrices: innerGraph,
+            variable,
+          }),
         );
       }
       const finalData = data.concat(additionalData);

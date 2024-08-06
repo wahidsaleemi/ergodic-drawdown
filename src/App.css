@@ -27,28 +27,28 @@
   justify-content: space-between;
   width: 100%;
   white-space: nowrap;
+  align-items: baseline;
+  gap: 0 5px;
+  padding-right: 5px;
 }
 
 .start {
   justify-content: flex-start;
-  align-items: baseline;
-  gap: 5px;
-}
-
-.start > label {
-  margin-right: 0px;
-}
-
-label {
-  margin-right: 5px;
+  gap: 0px 10px;
 }
 
 .select-model {
   width: 100%;
+  font-size: inherit;
 }
 
 .input-number {
   max-width: 75px;
+  font-size: inherit;
+}
+
+.input-date {
+  font-size: inherit;
 }
 
 .header {
@@ -68,7 +68,6 @@ label {
 
 .wide > .input-row {
   flex: 0 1 ;
-  align-items: baseline;
 }
 
 .stats {

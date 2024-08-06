@@ -4,16 +4,19 @@
 // eslint-disable-next-line functional/no-mixed-types
 
 interface MinMaxOptions {
-  currentBitcoinBlock: number;
-  currentBitcoinPrice: number;
+  currentBlock: number;
+  currentPrice: number;
+  variable: number;
   week: number;
 }
 
 // eslint-disable-next-line functional/no-mixed-types
 export interface PriceModel {
+  default: number;
   maxPrice: (options: MinMaxOptions) => number;
   minPrice: (options: MinMaxOptions) => number;
   modelType: string;
+  varInput: string;
 }
 
 export interface BlockData {
@@ -26,6 +29,24 @@ export type HalvingData = Record<string, number>;
 export interface HalvingWorker {
   currentBlock: number;
   halvings: HalvingData;
+}
+
+export interface GetStartingPriceNormalized {
+  currentBlock?: number;
+  currentPrice: number;
+  model: PriceModel;
+  variable: number;
+  week?: number;
+}
+
+export interface ApplyModel {
+  currentBlock?: number;
+  currentPrice?: number;
+  model: PriceModel;
+  normalizedPrices: number[];
+  startDate?: number;
+  startIndex?: number;
+  variable: number;
 }
 
 export interface Dataset {
@@ -56,6 +77,7 @@ export interface SimulationWorker {
   halvings: Record<number, number>;
   model: string;
   samples: number;
+  variable: number;
   volatility: number;
   walk: string;
 }

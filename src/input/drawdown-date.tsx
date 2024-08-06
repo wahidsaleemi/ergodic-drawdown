@@ -42,6 +42,7 @@ const DrawdownDateInput = ({
       <label htmlFor="distroDate">{inputLabels.drawdownDate}</label>
       <input
         autoComplete="off"
+        className="input-date"
         id="distroDate"
         min={minDate}
         onChange={handleDistroDate}

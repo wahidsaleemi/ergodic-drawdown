@@ -1,4 +1,9 @@
-import { type HalvingData, type PriceModel } from "./types";
+import { MS_PER_WEEK } from "./constants";
+import {
+  type ApplyModel,
+  type GetStartingPriceNormalized,
+  type HalvingData,
+} from "./types";
 
 // eslint-disable-next-line functional/functional-parameters
 export const weeksSinceLastHalving = (
@@ -45,51 +50,35 @@ export const saveHalvings = (halvings: HalvingData): void => {
   localStorage.setItem("halvings", JSON.stringify(halvings));
 };
 
-export const getStartingPriceNormalized = (
-  model: PriceModel,
-  currentBitcoinPrice: number,
+export const getStartingPriceNormalized = ({
+  currentBlock = 0,
+  currentPrice,
+  model,
+  variable,
   week = 0,
-  currentBitcoinBlock = 0,
-): number => {
-  const min = model.minPrice({
-    currentBitcoinBlock,
-    currentBitcoinPrice,
-    week,
-  });
-  const max = model.maxPrice({
-    currentBitcoinBlock,
-    currentBitcoinPrice,
-    week,
-  });
+}: GetStartingPriceNormalized): number => {
+  const min = model.minPrice({ currentBlock, currentPrice, variable, week });
+  const max = model.maxPrice({ currentBlock, currentPrice, variable, week });
 
-  return (currentBitcoinPrice - min) / (max - min);
+  return (currentPrice - min) / (max - min);
 };
 
-const oneWeek = 1000 * 60 * 60 * 24 * 7;
-
-export const applyModel = (
-  normalizedPrices: number[],
-  model: PriceModel,
+export const applyModel = ({
+  currentBlock = 0,
+  currentPrice = 50_000,
+  model,
+  normalizedPrices,
   startDate = Date.now(),
   startIndex = 0,
-  currentBitcoinBlock = 0,
-  currentBitcoinPrice = 50_000,
-): Array<{ x: number; y: number }> =>
+  variable,
+}: ApplyModel): Array<{ x: number; y: number }> =>
   normalizedPrices.map((price, index) => {
     const week = index + startIndex;
-    const min = model.minPrice({
-      currentBitcoinBlock,
-      currentBitcoinPrice,
-      week,
-    });
-    const max = model.maxPrice({
-      currentBitcoinBlock,
-      currentBitcoinPrice,
-      week,
-    });
+    const min = model.minPrice({ currentBlock, currentPrice, variable, week });
+    const max = model.maxPrice({ currentBlock, currentPrice, variable, week });
 
     return {
-      x: startDate + index * oneWeek,
+      x: startDate + index * MS_PER_WEEK,
       y: price >= 0 ? min + price * (max - min) : min * 10 ** price,
     };
   });

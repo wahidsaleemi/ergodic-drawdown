@@ -27,6 +27,7 @@ const WalkInput = ({ setLoading, setWalk, walk }: IWalkInput): JSX.Element => {
     <div className="input-row">
       <label htmlFor="walkInput">{inputLabels.walk}</label>
       <select
+        className="select-model"
         id="walkInput"
         onChange={handleWalk}
         onKeyDown={handleEnterKey}

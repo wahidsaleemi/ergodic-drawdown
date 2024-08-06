@@ -88,6 +88,8 @@ const StochasticGraph = (): React.ReactNode => {
   // Panel 1
   const [model, setModel] = useState<string>(models[2].modelType);
   const debouncedModel = useDebounce<string>(model, 300);
+  const [variable, setVariable] = useState<number>(0);
+  const debouncedVariable = useDebounce<number>(variable, 300);
   const [walk, setWalk] = useState<string>("Bubble");
   const debouncedWalk = useDebounce<string>(walk, 300);
   const [clampTop, setClampTop] = useState<boolean>(false);
@@ -185,6 +187,7 @@ const StochasticGraph = (): React.ReactNode => {
       debouncedClampBottom,
       debouncedClampTop,
       debouncedModel,
+      debouncedVariable,
       debouncedVolatility,
       debouncedWalk,
     });
@@ -207,6 +210,7 @@ const StochasticGraph = (): React.ReactNode => {
         halvings,
         model: debouncedModel,
         samples: debouncedSamples,
+        variable: debouncedVariable,
         volatility: debouncedVolatility,
         walk: debouncedWalk,
       },
@@ -234,6 +238,7 @@ const StochasticGraph = (): React.ReactNode => {
     debouncedEpoch,
     debouncedModel,
     debouncedSamples,
+    debouncedVariable,
     debouncedVolatility,
     debouncedWalk,
     halvings,
@@ -263,8 +268,9 @@ const StochasticGraph = (): React.ReactNode => {
         data: (priceData[0] ?? []).map((item, index) => ({
           x: item.x,
           y: modelMap[debouncedModel].minPrice({
-            currentBitcoinBlock: currentBlock,
-            currentBitcoinPrice: currentPrice,
+            currentBlock,
+            currentPrice,
+            variable: debouncedVariable,
             week: index,
           }),
         })),
@@ -275,10 +281,11 @@ const StochasticGraph = (): React.ReactNode => {
     ] satisfies DatasetList;
   }, [
     currentBlock,
-    priceData,
-    debouncedModel,
     currentPrice,
+    debouncedModel,
     debouncedRenderModelMin,
+    debouncedVariable,
+    priceData,
   ]);
 
   const maxModelDataset = useMemo(() => {
@@ -290,8 +297,9 @@ const StochasticGraph = (): React.ReactNode => {
         data: (priceData[0] ?? []).map((item, index) => ({
           x: item.x,
           y: modelMap[debouncedModel].maxPrice({
-            currentBitcoinBlock: currentBlock,
-            currentBitcoinPrice: currentPrice,
+            currentBlock,
+            currentPrice,
+            variable: debouncedVariable,
             week: index,
           }),
         })),
@@ -302,15 +310,17 @@ const StochasticGraph = (): React.ReactNode => {
     ] satisfies DatasetList;
   }, [
     currentBlock,
-    priceData,
-    debouncedModel,
     currentPrice,
+    debouncedModel,
     debouncedRenderModelMax,
+    debouncedVariable,
+    priceData,
   ]);
 
   // *******
   // BTC VOLUME
   // *******
+
   useEffect(() => {
     if (priceData.length === 0) return;
     const abortController = new AbortController();
@@ -537,6 +547,8 @@ const StochasticGraph = (): React.ReactNode => {
             model={model}
             setLoading={fullLoading}
             setModel={setModel}
+            setVariable={setVariable}
+            variable={variable}
           />
           <WalkInput setLoading={fullLoading} setWalk={setWalk} walk={walk} />
           <ClampInput
