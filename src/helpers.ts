@@ -60,6 +60,7 @@ export const getStartingPriceNormalized = ({
   const min = model.minPrice({ currentBlock, currentPrice, variable, week });
   const max = model.maxPrice({ currentBlock, currentPrice, variable, week });
 
+  if (currentPrice < min) return Math.log10(currentPrice / min);
   return (currentPrice - min) / (max - min);
 };
 
