@@ -31,17 +31,18 @@ export interface HalvingWorker {
   halvings: HalvingData;
 }
 
-export interface GetStartingPriceNormalized {
-  currentBlock?: number;
+export interface NormalizePrice {
+  currentBlock: number;
   currentPrice: number;
   model: PriceModel;
+  priceToNormalize: number;
   variable: number;
   week?: number;
 }
 
 export interface ApplyModel {
-  currentBlock?: number;
-  currentPrice?: number;
+  currentBlock: number;
+  currentPrice: number;
   model: PriceModel;
   normalizedPrices: number[];
   startDate?: number;
@@ -49,15 +50,17 @@ export interface ApplyModel {
   variable: number;
 }
 
+export interface Point {
+  x: number;
+  y: number;
+}
+
 export interface Dataset {
   backgroundColor?: string;
   borderColor?: string;
   borderDash?: number[];
   borderWidth?: number;
-  data: Array<{
-    x: number;
-    y: number;
-  }>;
+  data: Point[];
   fill?: boolean | string;
   label: string;
   pointRadius: number;
@@ -67,7 +70,7 @@ export interface Dataset {
 
 export type DatasetList = Dataset[];
 
-export type Data = Array<Array<{ x: number; y: number }>>;
+export type Data = Point[][];
 export interface SimulationWorker {
   clampBottom: boolean;
   clampTop: boolean;

@@ -6,7 +6,7 @@ import hashSum from "hash-sum";
 import { WEEKS_PER_EPOCH } from "../constants";
 import {
   applyModel,
-  getStartingPriceNormalized,
+  normalizePrice,
   timeout,
   weeksSinceLastHalving,
 } from "../helpers";
@@ -59,10 +59,11 @@ const simulationWorker = async (
     previousSimPath = simPath;
     console.time("simulation" + id);
     const graphs: Data = [];
-    const startingPrice = getStartingPriceNormalized({
+    const startingPrice = normalizePrice({
       currentBlock,
       currentPrice,
       model: mapped,
+      priceToNormalize: currentPrice,
       variable,
     });
     for (let index = 0; index < samples; index++) {
@@ -123,16 +124,18 @@ const simulationWorker = async (
         let count = 0;
         for (const sample of data) {
           if (count++ % 50 === 0) await timeout();
+          const normalizedPrice = normalizePrice({
+            currentBlock,
+            currentPrice,
+            model: mapped,
+            priceToNormalize: sample.at(-1)?.y ?? currentPrice,
+            variable,
+            week: sample.length,
+          });
           let newEpoch = walking({
             clampBottom,
             clampTop,
-            start: getStartingPriceNormalized({
-              currentBlock,
-              currentPrice: sample.at(-1)?.y ?? currentPrice,
-              model: mapped,
-              variable,
-              week: sample.length,
-            }),
+            start: normalizedPrice,
             startDay: sample.length === 0 ? lastHalving : 1,
             volatility,
           });
@@ -175,10 +178,11 @@ const simulationWorker = async (
       }
     } else if (samples > data.length) {
       const additionalData: Data = [];
-      const startingPrice = getStartingPriceNormalized({
+      const startingPrice = normalizePrice({
         currentBlock,
         currentPrice,
         model: mapped,
+        priceToNormalize: currentPrice,
         variable,
       });
 

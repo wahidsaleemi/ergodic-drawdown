@@ -1,8 +1,10 @@
+import { type Point } from "chart.js";
+
 import { MS_PER_WEEK } from "./constants";
 import {
   type ApplyModel,
-  type GetStartingPriceNormalized,
   type HalvingData,
+  type NormalizePrice,
 } from "./types";
 
 // eslint-disable-next-line functional/functional-parameters
@@ -50,31 +52,32 @@ export const saveHalvings = (halvings: HalvingData): void => {
   localStorage.setItem("halvings", JSON.stringify(halvings));
 };
 
-export const getStartingPriceNormalized = ({
-  currentBlock = 0,
+export const normalizePrice = ({
+  currentBlock,
   currentPrice,
   model,
+  priceToNormalize,
   variable,
   week = 0,
-}: GetStartingPriceNormalized): number => {
+}: NormalizePrice): number => {
   const min = model.minPrice({ currentBlock, currentPrice, variable, week });
   const max = model.maxPrice({ currentBlock, currentPrice, variable, week });
 
-  if (currentPrice < min) return Math.log10(currentPrice / min);
-  return (currentPrice - min) / (max - min);
+  if (priceToNormalize < min) return Math.log10(priceToNormalize / min);
+  return (priceToNormalize - min) / (max - min);
 };
 
 const now = Date.now();
 
 export const applyModel = ({
-  currentBlock = 0,
-  currentPrice = 50_000,
+  currentBlock,
+  currentPrice,
   model,
   normalizedPrices,
   startDate = now,
   startIndex = 0,
   variable,
-}: ApplyModel): Array<{ x: number; y: number }> =>
+}: ApplyModel): Point[] =>
   normalizedPrices.map((price, index) => {
     const week = index + startIndex;
     const min = model.minPrice({ currentBlock, currentPrice, variable, week });

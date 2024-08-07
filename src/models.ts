@@ -192,10 +192,8 @@ const calculateCAGRPrice = (
 const cagrModel: PriceModel = {
   default: 50,
   maxPrice: ({ currentPrice, variable, week }): number => {
-    const startPrice = currentPrice * 1.5;
-    const targetDate = new Date(
-      Date.now() + week * MS_PER_WEEK + 2 * MS_PER_YEAR,
-    );
+    const startPrice = currentPrice * 3;
+    const targetDate = new Date(Date.now() + week * MS_PER_WEEK);
     return calculateCAGRPrice(
       startPrice,
       targetDate.getTime() - Date.now(),
@@ -204,10 +202,8 @@ const cagrModel: PriceModel = {
   },
 
   minPrice: ({ currentPrice, variable, week }): number => {
-    const startPrice = currentPrice * 0.75;
-    const targetDate = new Date(
-      Date.now() + week * MS_PER_WEEK - 2 * MS_PER_YEAR,
-    );
+    const startPrice = currentPrice / 3;
+    const targetDate = new Date(Date.now() + week * MS_PER_WEEK);
     return calculateCAGRPrice(
       startPrice,
       targetDate.getTime() - Date.now(),
@@ -232,11 +228,11 @@ const calculateLinearPrice = (
 const linearModel: PriceModel = {
   default: Math.floor(4747 / WEEKS_PER_YEAR),
   maxPrice: ({ currentPrice, variable, week }): number => {
-    return calculateLinearPrice(week, currentPrice, variable) * 2;
+    return calculateLinearPrice(week, currentPrice, variable) * 3;
   },
 
   minPrice: ({ currentPrice, variable, week }): number => {
-    return calculateLinearPrice(week, currentPrice, variable) / 2;
+    return calculateLinearPrice(week, currentPrice, variable) / 3;
   },
 
   modelType: `Arithmetic (Linear)`,
