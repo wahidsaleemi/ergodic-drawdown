@@ -1,8 +1,8 @@
-import{N as n}from"./index-CrXuL5MK.js";const o={onButtonText:"How to use this website?",offButtonText:"Got it"};function t(i){const e={h2:"h2",h3:"h3",li:"li",p:"p",strong:"strong",ul:"ul",...i.components};return n.jsxs(n.Fragment,{children:[n.jsx(e.h2,{children:"How to use this website"}),`
+import{N as n}from"./index-CdnaB7mq.js";const o={onButtonText:"How to use this website?",offButtonText:"Got it"};function t(i){const e={h2:"h2",h3:"h3",li:"li",p:"p",strong:"strong",ul:"ul",...i.components};return n.jsxs(n.Fragment,{children:[n.jsx(e.h2,{children:"How to use this website"}),`
 `,n.jsx(e.h3,{children:"1. Price Model Assumptions"}),`
 `,n.jsxs(e.ul,{children:[`
 `,n.jsxs(e.li,{children:[n.jsx(e.strong,{children:"Model"}),': This sets the price model using any of the widely used pricing models based on past Bitcoin price behavior, see "The Models" above for explainers.']}),`
-`,n.jsxs(e.li,{children:[n.jsx(e.strong,{children:"Walk Strategy"}),": Bitcoins price does not follow a model price. It follows a non-random, ergodic, stochastic walk through a range of market forces. A walk strategy simulates this pathing representing how price fluctuations might occur."]}),`
+`,n.jsxs(e.li,{children:[n.jsx(e.strong,{children:"Walk Strategy"}),": Bitcoins price does not follow a model price. It follows a non-random, ergodic, stochastic walk through a range of market forces. A walk strategy simulates this natural path representing how price fluctuations might occur."]}),`
 `,n.jsxs(e.li,{children:[n.jsx(e.strong,{children:"Clamp Price to Max and Min"}),": Define maximum and minimum price constraints for the Bitcoin price simulation. Only applicable to some models."]}),`
 `,n.jsxs(e.li,{children:[n.jsx(e.strong,{children:"Volatility (0-1)"}),": Adjust how much the Bitcoin price can fluctuate in the simulation."]}),`
 `,n.jsxs(e.li,{children:[n.jsx(e.strong,{children:"Statistical Sample Count (1k-10k)"}),": The number of simulated samples to generate. A higher count can offer more accuracy but requires more processing resources."]}),`
