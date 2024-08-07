@@ -1,4 +1,4 @@
-import{N as n}from"./index-Wg6PeR-f.js";const o={onButtonText:"How to use this website?",offButtonText:"Got it"};function t(i){const e={h2:"h2",h3:"h3",li:"li",p:"p",strong:"strong",ul:"ul",...i.components};return n.jsxs(n.Fragment,{children:[n.jsx(e.h2,{children:"How to use this website"}),`
+import{N as n}from"./index-CrXuL5MK.js";const o={onButtonText:"How to use this website?",offButtonText:"Got it"};function t(i){const e={h2:"h2",h3:"h3",li:"li",p:"p",strong:"strong",ul:"ul",...i.components};return n.jsxs(n.Fragment,{children:[n.jsx(e.h2,{children:"How to use this website"}),`
 `,n.jsx(e.h3,{children:"1. Price Model Assumptions"}),`
 `,n.jsxs(e.ul,{children:[`
 `,n.jsxs(e.li,{children:[n.jsx(e.strong,{children:"Model"}),': This sets the price model using any of the widely used pricing models based on past Bitcoin price behavior, see "The Models" above for explainers.']}),`

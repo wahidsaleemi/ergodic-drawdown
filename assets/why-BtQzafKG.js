@@ -1,4 +1,4 @@
-import{N as e}from"./index-Wg6PeR-f.js";const o={onButtonText:"Why???",offButtonText:"Got it"};function t(i){const n={h2:"h2",h3:"h3",li:"li",ol:"ol",p:"p",strong:"strong",...i.components};return e.jsxs(e.Fragment,{children:[e.jsx(n.h2,{children:"Ergodic Monte Carlo Drawdown vs. Other Projection Tools"}),`
+import{N as e}from"./index-CrXuL5MK.js";const o={onButtonText:"Why???",offButtonText:"Got it"};function t(i){const n={h2:"h2",h3:"h3",li:"li",ol:"ol",p:"p",strong:"strong",...i.components};return e.jsxs(e.Fragment,{children:[e.jsx(n.h2,{children:"Ergodic Monte Carlo Drawdown vs. Other Projection Tools"}),`
 `,e.jsx(n.h3,{children:"What differentiates an Ergodic Bitcoin Drawdown via Monte Carlo Simulation from other financial projection tools?"}),`
 `,e.jsxs(n.ol,{children:[`
 `,e.jsxs(n.li,{children:[`
