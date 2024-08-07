@@ -1,0 +1,39 @@
+---
+onButtonText: How to use this website?
+offButtonText: Got it
+---
+
+## How to use this website
+
+### 1. Price Model Assumptions
+
+- **Model**: This sets the price model using any of the widely used pricing models based on past Bitcoin price behavior, see "The Models" above for explainers.
+- **Walk Strategy**: Bitcoins price does not follow a model price. It follows a non-random, ergodic, stochastic walk through a range of market forces. A walk strategy simulates this pathing representing how price fluctuations might occur.
+- **Clamp Price to Max and Min**: Define maximum and minimum price constraints for the Bitcoin price simulation. Only applicable to some models.
+- **Volatility (0-1)**: Adjust how much the Bitcoin price can fluctuate in the simulation.
+- **Statistical Sample Count (1k-10k)**: The number of simulated samples to generate. A higher count can offer more accuracy but requires more processing resources.
+- **Epoch Count (1-100)**: Set how many Bitcoin halving cycles the simulation will run into the future.
+
+### 2. Drawdown Assumptions
+
+- **Bitcoin Holdings**: Enter the total amount of Bitcoin to draw down from. Defaults to the Block Reward for the current Epoch.
+- **Yearly Expenses (USD)**: Specify yearly expenses in USD. Sub-dividing this is beyond the scope of this project. This should be inclusive of taxes from bitcoin sales, etc.
+- **Expected Annual Inflation (%)**: Input the rate at which you expect expense prices to rise annually, affecting the value of money, cost of living, and any life-style improvements like raises, etc. Defaults to 8%, which is close to legacy money supply issuance.
+- **BTC Drawdown Starts**: This field indicates the starting point of Bitcoin depletion based on the simulation settings. Defaulted to today + 8 years.
+
+### 3. Visualization Options
+
+- **Price, Standard Deviation, Quantile**: These settings control the aspects of price behavior you want to visualize, allowing for a detailed examination of variability and potential outcomes.
+- **Walk Count, Model Max, Model Min, Expenses**: These visualization settings help you understand the range of outcomes given your inputs and assumptions.
+
+### 4. Analyzing and Interpreting Results
+
+- Review the main graph and associated metrics to understand the likelihood of Bitcoin asset depletion based on your current holdings and spending patterns. Given default settings, the descending Green Dotted line terminates at the median remaining BTC across all simulations.
+- Analyze different scenarios to see how changes in market conditions or financial assumptions might affect longevity.
+
+### 5. Adjustments and Reevaluations
+
+- Modify your inputs based on changes in your financial situation, market conditions, or personal risk tolerance.
+- Regularly update and rerun the simulation to keep your financial projections current and responsive to new information.
+
+This structured approach helps you effectively use the simulation tool to plan and manage your Bitcoin investments considering various economic conditions and personal financial goals.

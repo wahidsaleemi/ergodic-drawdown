@@ -46,10 +46,12 @@ button {
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
+  text-decoration: underline;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: transparent;
   cursor: pointer;
   transition: border-color 0.25s;
+  min-width: 300px;
 }
 button:hover {
   border-color: #646cff;

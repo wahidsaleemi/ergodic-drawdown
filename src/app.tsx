@@ -27,6 +27,7 @@ import { bitcoinColor, fieldLabels, legal, pay, title } from "./content";
 import useDebounce from "./debounce";
 import ForkUs from "./fork-us";
 import { generateColor, loadHalvings } from "./helpers";
+import HowTo from "./how-to";
 import BitcoinInput from "./input/bitcoin";
 import ClampInput from "./input/clamp";
 import CostOfLivingInput from "./input/cost-of-living";
@@ -644,6 +645,7 @@ const StochasticGraph = (): React.ReactNode => {
   return (
     <div className="container">
       <div className="header">{title}</div>
+      <HowTo />
       <div className="section">
         <fieldset className="group">
           <legend>{fieldLabels.model}</legend>

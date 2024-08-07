@@ -17,6 +17,7 @@
   ],
   "prettier": {},
   "dependencies": {
+    "@mdx-js/rollup": "^3.0.1",
     "@tanstack/react-query": "^5.51.15",
     "chart.js": "^4.4.3",
     "chartjs-adapter-date-fns": "^3.0.0",
@@ -26,7 +27,9 @@
     "hash-sum": "^2.0.0",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.2.0",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "remark-frontmatter": "^5.0.0",
+    "remark-mdx-frontmatter": "^5.0.0"
   },
   "devDependencies": {
     "@svgr/core": "^8.1.0",
