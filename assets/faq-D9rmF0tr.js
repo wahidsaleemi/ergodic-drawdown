@@ -1,4 +1,4 @@
-import{N as e}from"./index-CdnaB7mq.js";const o={onButtonText:"FAQ",offButtonText:"Got it"};function i(t){const n={a:"a",h2:"h2",li:"li",ol:"ol",p:"p",strong:"strong",...t.components};return e.jsxs(e.Fragment,{children:[e.jsx(n.h2,{children:"Frequently Asked Questions (FAQ)"}),`
+import{N as e}from"./index-Cioa8r3B.js";const o={onButtonText:"FAQ",offButtonText:"Close FAQ",order:2};function i(t){const n={a:"a",h2:"h2",li:"li",ol:"ol",p:"p",strong:"strong",...t.components};return e.jsxs(e.Fragment,{children:[e.jsx(n.h2,{children:"Frequently Asked Questions (FAQ)"}),`
 `,e.jsxs(n.ol,{children:[`
 `,e.jsxs(n.li,{children:[`
 `,e.jsx(n.p,{children:e.jsx(n.strong,{children:"What is drawdown in the context of Bitcoin financial modeling?"})}),`
@@ -48,10 +48,10 @@ import{N as e}from"./index-CdnaB7mq.js";const o={onButtonText:"FAQ",offButtonTex
 `]}),`
 `,e.jsxs(n.li,{children:[`
 `,e.jsx(n.p,{children:e.jsx(n.strong,{children:"How often is the data and model updated?"})}),`
-`,e.jsxs(n.p,{children:["This tool scrapes the current daily price of bitcoin, and keeps a record of past prices. All other information is generated based on user input. For model requests, open a ",e.jsx(n.a,{href:"https://github.com/GildedPleb/ergodic-drawdown/issues/new",children:"github issue"}),"."]}),`
+`,e.jsxs(n.p,{children:["This tool scrapes the current daily price of bitcoin, and keeps a record of past prices. All other information is generated based on user input. For requests, open a ",e.jsx(n.a,{href:"https://github.com/GildedPleb/ergodic-drawdown/issues/new",children:"github issue"}),"."]}),`
 `]}),`
 `,e.jsxs(n.li,{children:[`
-`,e.jsx(n.p,{children:e.jsx(n.strong,{children:'What does "Weekly Adjusted Cost of Living Annualized" mean?'})}),`
-`,e.jsx(n.p,{children:"An estimation of how much it costs to live for a week, with this figure then being extrapolated to reflect an entire year. For example, 100K of expenses, after 1 year will be 110K of expenses. Each week, the model increments the 100K by the weekly increase needed to hit the target. This does not mean that for that week, 100K+ was spent, but only 1/52ish thereof."}),`
+`,e.jsx(n.p,{children:e.jsx(n.strong,{children:'What does "Weekly Adjusted Expenses Annualized" mean?'})}),`
+`,e.jsx(n.p,{children:"An estimation of how much it costs per week, with this figure then being extrapolated to reflect an entire year. For example, 100K of expenses, after 1 year will be 110K of expenses given a 10% increase in expenses (10% inflation). Each week, the model increments the 100K by the weekly increase needed to hit the target. This does not mean that for that week, 100K+ was spent, but only 1/52ish thereof."}),`
 `]}),`
 `]})]})}function a(t={}){const{wrapper:n}=t.components||{};return n?e.jsx(n,{...t,children:e.jsx(i,{...t})}):i(t)}export{a as default,o as frontmatter};

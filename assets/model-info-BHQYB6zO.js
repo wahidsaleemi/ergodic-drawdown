@@ -1,7 +1,7 @@
-import{N as e}from"./index-CdnaB7mq.js";const r={onButtonText:"The Models",offButtonText:"Got it"};function t(n){const i={a:"a",h2:"h2",h3:"h3",li:"li",p:"p",ul:"ul",...n.components};return e.jsxs(e.Fragment,{children:[e.jsx(i.h2,{children:"The Models"}),`
-`,e.jsx(i.h3,{children:"1. Arithmetic (Linear)"}),`
+import{N as e}from"./index-Cioa8r3B.js";const r={onButtonText:"Models",offButtonText:"Close Models",order:3};function t(n){const i={a:"a",h2:"h2",h3:"h3",li:"li",p:"p",ul:"ul",...n.components};return e.jsxs(e.Fragment,{children:[e.jsx(i.h2,{children:"The Models"}),`
+`,e.jsx(i.h3,{children:"1. Linear"}),`
 `,e.jsx(i.p,{children:"This model assumes a linear growth or decline rate of Bitcoin prices over time. It's the simplest model and typically used for short-term forecasts. It also happens to be irrelevant, as nothing in finance and economics follows a Linear path but it is included for completeness."}),`
-`,e.jsx(i.h3,{children:"2. Quadratic (Polynomial)"}),`
+`,e.jsx(i.h3,{children:"2. Quadratic"}),`
 `,e.jsx(i.p,{children:"This model captures curvature in price trends by including a squared term, allowing for acceleration or deceleration in price changes, which may reflect market cycles more accurately than a linear model, but is generally still wanting."}),`
 `,e.jsx(i.h3,{children:"3. Power Law Regression Median (Logarithmic)"}),`
 `,e.jsx(i.p,{children:"This model uses a power law applied to the median values of historical price data, assuming that price changes are proportional to current prices at a constant rate. It's useful for long-term predictions and highlighting potential price scales."}),`
@@ -20,8 +20,8 @@ import{N as e}from"./index-CdnaB7mq.js";const r={onButtonText:"The Models",offBu
 `,e.jsx(i.li,{children:e.jsx(i.a,{href:"https://www.bitcoinmagazinepro.com/charts/bitcoin-rainbow-chart/",children:"Exploration of Rainbow Charts"})}),`
 `,e.jsx(i.li,{children:e.jsx(i.a,{href:"https://www.blockchaincenter.net/en/bitcoin-rainbow-chart/",children:"Original Rainbow Chart"})}),`
 `]}),`
-`,e.jsx(i.h3,{children:"6. CAGR (Geometric)"}),`
-`,e.jsx(i.p,{children:"The Compound Annual Growth Rate (CAGR) model calculates the geometric progression ratio that provides a constant rate of return over a specific time period. This model is good for assessing what the average annual growth rate of Bitcoin has been over multiple years."}),`
+`,e.jsx(i.h3,{children:"6. CAGR"}),`
+`,e.jsx(i.p,{children:"The Compound Annual Growth Rate (CAGR) model calculates the geometric progression ratio that provides a constant rate of return over a specific time period. This model is good when assuming a standard yearly compounding percent increase in value."}),`
 `,e.jsxs(i.ul,{children:[`
 `,e.jsx(i.li,{children:e.jsx(i.a,{href:"https://bitcoincompounding.com/",children:"Bitcoin Fire Calculator"})}),`
 `,e.jsx(i.li,{children:e.jsx(i.a,{href:"https://www.bitcoinisthebettermoney.com/cagr",children:"Bitcoin: 4-Year Returns"})}),`
