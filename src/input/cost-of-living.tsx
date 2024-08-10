@@ -28,7 +28,7 @@ const CostOfLivingInput = ({
     );
 
   return (
-    <div className="input-row">
+    <div className="input-row expenses-input">
       <label htmlFor="costOfLiving">{inputLabels.costOfLiving}</label>
       <input
         autoComplete="off"

@@ -2,16 +2,18 @@
 /* eslint-disable security/detect-object-injection */
 import hashSum from "hash-sum";
 
+import { MS_PER_WEEK } from "../constants";
 import { priceDistroColor } from "../content";
 import { timeout } from "../helpers";
-import { type Data, type DatasetList } from "../types";
+import { type DatasetList, type PriceData } from "../types";
 
 const signalState = { aborted: false };
 
 const NAME = "volume normal distribution";
 
 const priceNormalDistributionWorker = async (
-  priceDataset: Data,
+  priceDataset: PriceData,
+  now: number,
   signal: AbortSignal,
 ): Promise<[string, DatasetList | undefined]> => {
   const id = hashSum(Math.random());
@@ -39,9 +41,12 @@ const priceNormalDistributionWorker = async (
     } else {
       // console.log("loop normal");
     }
-    for (const { x, y } of innerArray) {
+    let innerIndex = 0;
+    for (const y of innerArray) {
+      const x = now + innerIndex * MS_PER_WEEK;
       if (!(x in groupedData)) groupedData[x] = [];
       groupedData[x].push(y);
+      innerIndex++;
     }
   }
 
@@ -77,7 +82,7 @@ const priceNormalDistributionWorker = async (
 
     meanData.push({ x: date, y: mean });
     upperData.push({ x: date, y: mean + standardDeviation });
-    lowerData.push({ x: date, y: Math.max(mean - standardDeviation, 0.0001) });
+    lowerData.push({ x: date, y: Math.max(mean - standardDeviation, 0.01) });
   }
 
   const finalData = [
@@ -113,7 +118,7 @@ const priceNormalDistributionWorker = async (
       tension: 0,
       yAxisID: "y",
     },
-  ];
+  ] satisfies DatasetList;
   signal.removeEventListener("abort", AbortAction);
   console.timeEnd(NAME + id);
   return [id, finalData];

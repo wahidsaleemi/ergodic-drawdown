@@ -3,9 +3,9 @@ import { calculateHalvings, loadHalvings, saveHalvings } from "../helpers";
 import { type HalvingData, type HalvingWorker } from "../types";
 
 // eslint-disable-next-line functional/functional-parameters
-const halvingWorker = async (): Promise<HalvingWorker> => {
+const halvingWorker = async (now: number): Promise<HalvingWorker> => {
   console.time("halving");
-  const currentBlockHeight = await getCurrentBlockHeight();
+  const currentBlockHeight = await getCurrentBlockHeight(now);
   const neededHalvings = calculateHalvings(currentBlockHeight);
   const storedHalvings = loadHalvings();
   const halvingsToFetch = neededHalvings.filter(

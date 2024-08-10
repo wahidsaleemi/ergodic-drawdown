@@ -6,6 +6,8 @@
 interface MinMaxOptions {
   currentBlock: number;
   currentPrice: number;
+  minMaxMultiple: number;
+  now: number;
   variable: number;
   week: number;
 }
@@ -34,7 +36,9 @@ export interface HalvingWorker {
 export interface NormalizePrice {
   currentBlock: number;
   currentPrice: number;
+  minMaxMultiple: number;
   model: PriceModel;
+  now: number;
   priceToNormalize: number;
   variable: number;
   week?: number;
@@ -43,9 +47,10 @@ export interface NormalizePrice {
 export interface ApplyModel {
   currentBlock: number;
   currentPrice: number;
+  minMaxMultiple: number;
   model: PriceModel;
   normalizedPrices: number[];
-  startDate?: number;
+  now: number;
   startIndex?: number;
   variable: number;
 }
@@ -70,15 +75,40 @@ export interface Dataset {
 
 export type DatasetList = Dataset[];
 
-export type Data = Point[][];
+export type PriceData = Float64Array[];
+
+export type VolumeData = Float64Array[];
+
+export interface Full {
+  clampBottom: boolean;
+  clampTop: boolean;
+  minMaxMultiple: number;
+  model: string;
+  now: number;
+  variable: number;
+  volatility: number;
+  walk: string;
+}
+
+export interface Part {
+  currentBlock: number;
+  currentPrice: number;
+  epochCount: number;
+  halvings: HalvingData;
+  samples: number;
+}
 export interface SimulationWorker {
   clampBottom: boolean;
   clampTop: boolean;
   currentBlock: number;
   currentPrice: number;
   epochCount: number;
+  full: Full;
   halvings: Record<number, number>;
+  minMaxMultiple: number;
   model: string;
+  now: number;
+  part: Part;
   samples: number;
   variable: number;
   volatility: number;
@@ -88,15 +118,16 @@ export interface SimulationWorker {
 export interface VolumeWorker {
   bitcoin: number;
   costOfLiving: number;
-  data: Data;
+  data: PriceData;
   drawdownDate: number;
   inflation: number;
+  now: number;
 }
 
 export interface VolumeReturn {
   average: number;
   median: number;
-  volumeDataset: Data;
+  volumeDataset: VolumeData;
   zero: number;
 }
 // eslint-disable-next-line functional/functional-parameters

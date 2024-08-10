@@ -140,7 +140,7 @@ const Chart = ({ dataProperties, halvings }: IChart): JSX.Element => {
   }, [annotations]);
 
   // eslint-disable-next-line react/react-in-jsx-scope
-  return <Line data={dataProperties} options={options} />;
+  return <Line className="chart" data={dataProperties} options={options} />;
 };
 
 export default Chart;

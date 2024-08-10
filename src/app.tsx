@@ -19,6 +19,7 @@ import Lightning1 from "./assets/lightning1.svg?react";
 import marketData from "./bitcoin_weekly_prices_transformed_2.json";
 import {
   isMobile,
+  MS_PER_DAY,
   MS_PER_WEEK,
   MS_PER_YEAR,
   WEEKS_PER_YEAR,
@@ -26,8 +27,13 @@ import {
 import { bitcoinColor, fieldLabels, legal, pay, title } from "./content";
 import useDebounce from "./debounce";
 import ForkUs from "./fork-us";
-import { generateColor, loadHalvings } from "./helpers";
-import HowTo from "./how-to";
+import {
+  generateColor,
+  getDataSetSize,
+  getDataSize,
+  loadHalvings,
+} from "./helpers";
+import Tutorial from "./how-to";
 import BitcoinInput from "./input/bitcoin";
 import ClampInput from "./input/clamp";
 import CostOfLivingInput from "./input/cost-of-living";
@@ -49,7 +55,14 @@ import SampleInput from "./input/samples";
 import VolInput from "./input/volatility";
 import WalkInput from "./input/walk";
 import { modelMap, models } from "./models";
-import { type Data, type DatasetList } from "./types";
+import More from "./More";
+import {
+  type DatasetList,
+  type Full,
+  type Part,
+  type PriceData,
+  type VolumeData,
+} from "./types";
 import drawdownNormalDistributionWorker from "./workers/drawdown-normal-worker";
 import drawdownQuantileWorker from "./workers/drawdown-quantile-worker";
 import halvingWorker from "./workers/halving-worker";
@@ -81,13 +94,14 @@ const reward = 50 / 2 ** Object.keys(loadedHalvings).length;
 const DEBOUNCE = 200;
 
 const StochasticGraph = (): React.ReactNode => {
-  console.time("one render");
+  console.time("render");
 
   // State
-  const [priceData, setPriceData] = useState<Data>([]);
+  const [now, setNow] = useState<number>(Date.now());
+  const [priceData, setPriceData] = useState<PriceData>([]);
   const [priceQuantile, setPriceQuantile] = useState<DatasetList>([]);
   const [priceNormal, setPriceNormal] = useState<DatasetList>([]);
-  const [volumeData, setVolumeData] = useState<Data>([]);
+  const [volumeData, setVolumeData] = useState<VolumeData>([]);
   const [volumeQuantile, setVolumeQuantile] = useState<DatasetList>([]);
   const [volumeNormal, setVolumeNormal] = useState<DatasetList>([]);
   const [zero, setZero] = useState<number>(0);
@@ -101,6 +115,8 @@ const StochasticGraph = (): React.ReactNode => {
   const debouncedModel = useDebounce<string>(model, DEBOUNCE);
   const [variable, setVariable] = useState<number>(0);
   const debouncedVariable = useDebounce<number>(variable, DEBOUNCE);
+  const [minMaxMultiple, setMinMaxMultiple] = useState<number>(3);
+  const debouncedMinMaxMultiple = useDebounce<number>(minMaxMultiple, DEBOUNCE);
   const [walk, setWalk] = useState<string>("Bubble");
   const debouncedWalk = useDebounce<string>(walk, DEBOUNCE);
   const [clampTop, setClampTop] = useState<boolean>(false);
@@ -121,9 +137,7 @@ const StochasticGraph = (): React.ReactNode => {
   const debouncedCostOfLiving = useDebounce<number>(costOfLiving, DEBOUNCE);
   const [inflation, setInflation] = useState<number>(8);
   const debouncedInflation = useDebounce<number>(inflation, DEBOUNCE);
-  const [drawdownDate, setDrawdownDate] = useState(
-    Date.now() + 8 * MS_PER_YEAR,
-  );
+  const [drawdownDate, setDrawdownDate] = useState(now + 8 * MS_PER_YEAR);
   const debouncedDrawdownDate = useDebounce<number>(drawdownDate, DEBOUNCE);
 
   // Panel 3
@@ -174,9 +188,18 @@ const StochasticGraph = (): React.ReactNode => {
     DEBOUNCE,
   );
 
+  useEffect(() => {
+    const daily = setInterval(() => {
+      setNow(Date.now());
+    }, MS_PER_DAY);
+    return () => {
+      clearInterval(daily);
+    };
+  }, []);
+
   const { data: interim = [] } = useQuery({
-    queryFn: getInterimWeeklyData,
-    queryKey: ["interim"],
+    queryFn: async () => getInterimWeeklyData(now),
+    queryKey: ["interim", now],
   });
 
   const interimDataset = useMemo(
@@ -196,18 +219,18 @@ const StochasticGraph = (): React.ReactNode => {
 
   const { data: { currentBlock, halvings } = defaultHalving } = useQuery({
     placeholderData: defaultHalving,
-    queryFn: halvingWorker,
-    queryKey: ["halving"],
+    queryFn: async () => halvingWorker(now),
+    queryKey: ["halving", now],
     staleTime: Infinity,
   });
 
   const { data: currentPrice = 0 } = useQuery({
     placeholderData: 0,
     queryFn: async () => {
-      const newPrice = await getCurrentPrice();
+      const newPrice = await getCurrentPrice(now);
       return newPrice.close;
     },
-    queryKey: ["currentPrice"],
+    queryKey: ["currentPrice", now],
     staleTime: Infinity,
   });
 
@@ -219,39 +242,24 @@ const StochasticGraph = (): React.ReactNode => {
     if (currentPrice === 0 || currentBlock === 0) return;
     const abortController = new AbortController();
     const { signal } = abortController;
-    const simPath = hashSum({
-      debouncedClampBottom,
-      debouncedClampTop,
-      debouncedModel,
-      debouncedVariable,
-      debouncedVolatility,
-      debouncedWalk,
-    });
-    const adjustPath = hashSum({
+    const full: Full = {
+      clampBottom: debouncedClampBottom,
+      clampTop: debouncedClampTop,
+      minMaxMultiple: debouncedMinMaxMultiple,
+      model: debouncedModel,
+      now,
+      variable: debouncedVariable,
+      volatility: debouncedVolatility,
+      walk: debouncedWalk,
+    };
+    const part: Part = {
       currentBlock,
       currentPrice,
-      debouncedEpoch,
-      debouncedSamples,
+      epochCount: debouncedEpoch,
       halvings,
-    });
-    simulationWorker(
-      simPath,
-      adjustPath,
-      {
-        clampBottom: debouncedClampBottom,
-        clampTop: debouncedClampTop,
-        currentBlock,
-        currentPrice,
-        epochCount: debouncedEpoch,
-        halvings,
-        model: debouncedModel,
-        samples: debouncedSamples,
-        variable: debouncedVariable,
-        volatility: debouncedVolatility,
-        walk: debouncedWalk,
-      },
-      signal,
-    )
+      samples: debouncedSamples,
+    };
+    simulationWorker(hashSum(full), hashSum(part), full, part, signal)
       .then(([id, newData]) => {
         if (signal.aborted || newData.length === 0) {
           console.log("Aborted not setting price state....", id);
@@ -283,6 +291,7 @@ const StochasticGraph = (): React.ReactNode => {
     debouncedVolatility,
     debouncedWalk,
     halvings,
+    debouncedMinMaxMultiple,
   ]);
 
   const priceWalkDatasets: DatasetList = useMemo(
@@ -292,12 +301,15 @@ const StochasticGraph = (): React.ReactNode => {
         : priceData.slice(0, debouncedSamplesToRender).map((graph, index) => ({
             borderColor: generateColor(index),
             borderWidth: 0.5,
-            data: graph,
+            data: Array.from(graph, (point, innerIndex) => ({
+              x: now + innerIndex * MS_PER_WEEK,
+              y: point,
+            })),
             label: `Potential Bitcoin Price (${index})`,
             pointRadius: 0,
             tension: 0,
           })),
-    [priceData, debouncedSamplesToRender],
+    [debouncedSamplesToRender, priceData, now],
   );
 
   useEffect(() => {
@@ -305,7 +317,7 @@ const StochasticGraph = (): React.ReactNode => {
     const abortController = new AbortController();
     const { signal } = abortController;
 
-    priceQuantileWorker(priceData, signal)
+    priceQuantileWorker(priceData, now, signal)
       .then(([id, newData]) => {
         if (signal.aborted || newData === undefined) {
           console.log("Aborted price quantile not setting state....", id);
@@ -319,14 +331,14 @@ const StochasticGraph = (): React.ReactNode => {
     return () => {
       abortController.abort();
     };
-  }, [priceData, debouncedRenderPriceQuantile]);
+  }, [priceData, debouncedRenderPriceQuantile, now]);
 
   useEffect(() => {
     if (priceData.length === 0 || !debouncedRenderPriceNormal) return;
     const abortController = new AbortController();
     const { signal } = abortController;
 
-    priceNormalDistributionWorker(priceData, signal)
+    priceNormalDistributionWorker(priceData, now, signal)
       .then(([id, newData]) => {
         if (signal.aborted || newData === undefined) {
           console.log("Aborted price normal not setting state....", id);
@@ -340,23 +352,32 @@ const StochasticGraph = (): React.ReactNode => {
     return () => {
       abortController.abort();
     };
-  }, [priceData, debouncedRenderPriceNormal]);
+  }, [priceData, debouncedRenderPriceNormal, now]);
 
   const minModelDataset = useMemo(() => {
     if (!debouncedRenderModelMin) return [];
+
+    const datasetLength = (priceData[0] ?? []).length;
+    const minPoints = [];
+
+    for (let index = 0; index < datasetLength; index++) {
+      minPoints.push({
+        x: now + index * MS_PER_WEEK,
+        y: modelMap[debouncedModel].minPrice({
+          currentBlock,
+          currentPrice,
+          minMaxMultiple: debouncedMinMaxMultiple,
+          now,
+          variable: debouncedVariable,
+          week: index,
+        }),
+      });
+    }
     return [
       {
         borderColor: "green",
         borderWidth: 0.5,
-        data: (priceData[0] ?? []).map((item, index) => ({
-          x: item.x,
-          y: modelMap[debouncedModel].minPrice({
-            currentBlock,
-            currentPrice,
-            variable: debouncedVariable,
-            week: index,
-          }),
-        })),
+        data: minPoints,
         label: `Model Min Value`,
         pointRadius: 0,
         tension: 0,
@@ -365,27 +386,38 @@ const StochasticGraph = (): React.ReactNode => {
   }, [
     currentBlock,
     currentPrice,
+    debouncedMinMaxMultiple,
     debouncedModel,
     debouncedRenderModelMin,
     debouncedVariable,
+    now,
     priceData,
   ]);
 
   const maxModelDataset = useMemo(() => {
     if (!debouncedRenderModelMax) return [];
+
+    const datasetLength = (priceData[0] ?? []).length;
+    const maxPoints = [];
+
+    for (let index = 0; index < datasetLength; index++) {
+      maxPoints.push({
+        x: now + index * MS_PER_WEEK,
+        y: modelMap[debouncedModel].maxPrice({
+          currentBlock,
+          currentPrice,
+          minMaxMultiple: debouncedMinMaxMultiple,
+          now,
+          variable: debouncedVariable,
+          week: index,
+        }),
+      });
+    }
     return [
       {
         borderColor: "red",
         borderWidth: 0.5,
-        data: (priceData[0] ?? []).map((item, index) => ({
-          x: item.x,
-          y: modelMap[debouncedModel].maxPrice({
-            currentBlock,
-            currentPrice,
-            variable: debouncedVariable,
-            week: index,
-          }),
-        })),
+        data: maxPoints,
         label: `Model Max Value`,
         pointRadius: 0,
         tension: 0,
@@ -394,9 +426,11 @@ const StochasticGraph = (): React.ReactNode => {
   }, [
     currentBlock,
     currentPrice,
+    debouncedMinMaxMultiple,
     debouncedModel,
     debouncedRenderModelMax,
     debouncedVariable,
+    now,
     priceData,
   ]);
 
@@ -416,6 +450,7 @@ const StochasticGraph = (): React.ReactNode => {
         data: priceData,
         drawdownDate: debouncedDrawdownDate,
         inflation: debouncedInflation,
+        now,
       },
       signal,
     )
@@ -454,13 +489,16 @@ const StochasticGraph = (): React.ReactNode => {
         : volumeData.slice(0, debouncedSamplesToRender).map((graph, index) => ({
             borderColor: generateColor(index),
             borderWidth: 1,
-            data: graph,
+            data: Array.from(graph, (point, innerIndex) => ({
+              x: drawdownDate + innerIndex * MS_PER_WEEK,
+              y: point,
+            })),
             label: `BTC Amount (${index})`,
             pointRadius: 0,
             tension: 0,
             yAxisID: "y1",
           })),
-    [debouncedSamplesToRender, volumeData],
+    [debouncedSamplesToRender, drawdownDate, volumeData],
   );
 
   useEffect(() => {
@@ -468,7 +506,7 @@ const StochasticGraph = (): React.ReactNode => {
     const abortController = new AbortController();
     const { signal } = abortController;
 
-    drawdownNormalDistributionWorker(volumeData, signal)
+    drawdownNormalDistributionWorker(volumeData, drawdownDate, signal)
       .then(([id, newData]) => {
         if (signal.aborted || newData === undefined) {
           console.log("Aborted volume normal not setting state....", id);
@@ -482,14 +520,14 @@ const StochasticGraph = (): React.ReactNode => {
     return () => {
       abortController.abort();
     };
-  }, [volumeData, debouncedRenderNormal]);
+  }, [volumeData, debouncedRenderNormal, drawdownDate]);
 
   useEffect(() => {
     if (volumeData.length === 0 || !debouncedRenderQuantile) return;
     const abortController = new AbortController();
     const { signal } = abortController;
 
-    drawdownQuantileWorker(volumeData, signal)
+    drawdownQuantileWorker(volumeData, drawdownDate, signal)
       .then(([id, newData]) => {
         if (signal.aborted || newData === undefined) {
           console.log("Aborted quantile not setting state....", id);
@@ -503,20 +541,22 @@ const StochasticGraph = (): React.ReactNode => {
     return () => {
       abortController.abort();
     };
-  }, [volumeData, debouncedRenderQuantile]);
+  }, [volumeData, debouncedRenderQuantile, drawdownDate]);
 
   const costOfLivingDataset = useMemo(() => {
     if (priceData.length === 0) return [];
-    const now = Date.now();
     const weeklyInflationRate =
       (1 + debouncedInflation / 100) ** (1 / WEEKS_PER_YEAR) - 1;
     let weeklyCostOfLiving = debouncedCostOfLiving / WEEKS_PER_YEAR;
-    const dataPoints = (priceData[0] ?? []).map((_, index) => {
-      if (index !== 0) weeklyCostOfLiving *= 1 + weeklyInflationRate;
-      const x = now + index * MS_PER_WEEK;
-      const y = weeklyCostOfLiving * WEEKS_PER_YEAR;
-      return { x, y };
-    });
+    const dataPoints = Array.from(
+      { length: priceData[0]?.length ?? 0 },
+      (_, index) => {
+        if (index !== 0) weeklyCostOfLiving *= 1 + weeklyInflationRate;
+        const x = now + index * MS_PER_WEEK;
+        const y = weeklyCostOfLiving * WEEKS_PER_YEAR;
+        return { x, y };
+      },
+    );
 
     return [
       {
@@ -524,7 +564,7 @@ const StochasticGraph = (): React.ReactNode => {
         borderDash: [5, 5],
         borderWidth: 1,
         data: dataPoints,
-        label: `Weekly Adjusted Cost of Living Annualized`,
+        label: `Weekly Adjusted Expenses, Annualized`,
         pointRadius: 0,
         tension: 0,
       },
@@ -572,13 +612,44 @@ const StochasticGraph = (): React.ReactNode => {
     ],
   );
 
-  const using = priceData.length * priceData[0]?.length;
-  const memoryUsageMB = (using * 3 * 40) / (1024 * 1024);
+  const using =
+    priceData.length * priceData[0]?.length +
+    volumeData.length * volumeData[0]?.length;
+  const memoryUsageMB = useMemo(
+    () =>
+      getDataSize(priceData) * 2 +
+      getDataSize(volumeData) +
+      getDataSetSize([marketDataset]) +
+      getDataSetSize([interimDataset]) +
+      getDataSetSize(priceWalkDatasets) +
+      getDataSetSize(priceQuantile) +
+      getDataSetSize(minModelDataset) +
+      getDataSetSize(maxModelDataset) +
+      getDataSetSize(drawdownWalkDatasets) +
+      getDataSetSize(volumeQuantile) +
+      getDataSetSize(volumeNormal) +
+      getDataSetSize(costOfLivingDataset) +
+      getDataSetSize(priceNormal),
+    [
+      costOfLivingDataset,
+      drawdownWalkDatasets,
+      interimDataset,
+      maxModelDataset,
+      minModelDataset,
+      priceData,
+      priceNormal,
+      priceQuantile,
+      priceWalkDatasets,
+      volumeData,
+      volumeNormal,
+      volumeQuantile,
+    ],
+  );
 
   let memoryUsageClass = "";
   if (memoryUsageMB > 1024) {
     memoryUsageClass = "memory-high";
-  } else if (memoryUsageMB > 512) {
+  } else if (memoryUsageMB > 256) {
     memoryUsageClass = "memory-medium";
   }
 
@@ -586,29 +657,31 @@ const StochasticGraph = (): React.ReactNode => {
   const mid = `${memoryUsageMB.toFixed(0)} MB`;
   const end = `)`;
 
-  const dataPointCount = loadingPriceData ? (
-    <div className="loader" />
-  ) : (
-    <>
-      <span>{beginning}</span>
-      <span className={memoryUsageClass}>{mid}</span>
-      <span>{end}</span>
-    </>
-  );
+  const dataPointCount =
+    loadingPriceData || samples === 0 ? (
+      <div className="loader" />
+    ) : (
+      <>
+        <span>{beginning}</span>
+        <span className={memoryUsageClass}>{mid}</span>
+        <span>{end}</span>
+      </>
+    );
 
   const expirationDate = priceWalkDatasets[0]?.data.at(-1);
   const expired =
     expirationDate === undefined
       ? ""
-      : `by ${new Date(expirationDate.x).toDateString()}`;
+      : new Date(expirationDate.x).toDateString().slice(-4);
 
   const escapeVelocity = useMemo(
     () =>
-      loadingVolumeData ? (
+      loadingVolumeData || samples === 0 ? (
         <div className="loader" />
       ) : (
-        `${(100 - (zero / debouncedSamples) * 100).toFixed(2)}% chance of not exhausting bitcoin holdings ${expired}
-        with an average of ${Number.isNaN(average) || average === undefined ? bitcoin : average.toFixed(4)} Bitcoin left (median ${Number.isNaN(median) || median === undefined ? bitcoin : median.toFixed(4)}),
+        `${(100 - (zero / debouncedSamples) * 100).toFixed(2)}% chance of not exhausting bitcoin holdings ${expired === "" ? expired : "by " + expired}
+        with an average of ${Number.isNaN(average) || average === undefined ? bitcoin : average.toFixed(4)} Bitcoin left
+        (median ${Number.isNaN(median) || median === undefined ? bitcoin : median.toFixed(4)}),
         if drawing down weekly from a ${debouncedBitcoin} bitcoin balance,
         starting ${new Date(debouncedDrawdownDate).toDateString()},
         to meet $${debouncedCostOfLiving.toLocaleString()} of yearly costs (in todays dollars),
@@ -629,6 +702,30 @@ const StochasticGraph = (): React.ReactNode => {
       debouncedInflation,
       debouncedModel,
       debouncedWalk,
+      samples,
+    ],
+  );
+
+  const bitcoinWorth =
+    (Number.isNaN(average) || average === undefined ? bitcoin : average) *
+    (priceData[0]?.at(-1) ?? 0);
+
+  const balanceWorth = useMemo(
+    () =>
+      loadingVolumeData || samples === 0 ? (
+        <div />
+      ) : (
+        `Remaining average worth $${bitcoinWorth.toLocaleString()}
+        in ${expired} dollars
+        ($${((costOfLiving / (costOfLivingDataset[0].data.at(-1)?.y ?? 0)) * bitcoinWorth).toLocaleString()} in ${new Date().toDateString().slice(-4)} dollars).`
+      ),
+    [
+      bitcoinWorth,
+      costOfLiving,
+      costOfLivingDataset,
+      expired,
+      loadingVolumeData,
+      samples,
     ],
   );
 
@@ -641,17 +738,39 @@ const StochasticGraph = (): React.ReactNode => {
     setLoadingVolumeData(true);
   }, []);
 
-  console.timeEnd("one render");
+  console.timeEnd("render");
+
   return (
     <div className="container">
-      <div className="header">{title}</div>
-      <HowTo />
+      <h1 className="header">{title}</h1>
+      {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/no-redundant-boolean */}
+      {false && (
+        <Tutorial
+          setClampBottom={setClampBottom}
+          setClampTop={setClampTop}
+          setRenderDrawdown={setRenderDrawdown}
+          setRenderExpenses={setRenderExpenses}
+          setRenderModelMax={setRenderModelMax}
+          setRenderModelMin={setRenderModelMin}
+          setRenderNormal={setRenderNormal}
+          setRenderPriceNormal={setRenderPriceNormal}
+          setRenderPriceQuantile={setRenderPriceQuantile}
+          setRenderPriceWalks={setRenderPriceWalks}
+          setRenderQuantile={setRenderQuantile}
+          setSamples={setSamples}
+          setSamplesToRender={setSamplesToRender}
+          setVolatility={setVolatility}
+          setWalk={setWalk}
+        />
+      )}
       <div className="section">
         <fieldset className="group">
           <legend>{fieldLabels.model}</legend>
           <ModelInput
+            minMaxMultiple={minMaxMultiple}
             model={model}
             setLoading={fullLoading}
+            setMinMaxMultiple={setMinMaxMultiple}
             setModel={setModel}
             setVariable={setVariable}
             variable={variable}
@@ -701,14 +820,13 @@ const StochasticGraph = (): React.ReactNode => {
           />
           <DrawdownDateInput
             drawdownDate={drawdownDate}
-            now={priceWalkDatasets[0]?.data[0]?.x}
+            now={now}
             setDrawdownDate={setDrawdownDate}
             setLoading={semiLoading}
           />
         </fieldset>
         <fieldset className="group">
           <legend>{fieldLabels.graph}</legend>
-
           <fieldset className="wide start">
             <legend>{fieldLabels.price}</legend>
             <RenderPriceWalkInput
@@ -760,10 +878,14 @@ const StochasticGraph = (): React.ReactNode => {
           </div>
         </fieldset>
       </div>
-      <div className="center-text">{escapeVelocity}</div>
+      <div className="center-text">
+        <span>{escapeVelocity}</span>
+        <span>{balanceWorth}</span>
+      </div>
       <Suspense fallback={<div className="loader" />}>
         <Chart dataProperties={dataProperties} halvings={halvings} />
       </Suspense>
+      <More />
       <div className="pay-me">
         <Lightning1 />
         <a href="lightning:gildedpleb@getalby.com">{pay}</a>

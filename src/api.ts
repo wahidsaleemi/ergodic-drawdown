@@ -4,7 +4,7 @@ import { type BitcoinDataPoint, type BlockData } from "./types";
 const CURRENT_PRICE = "current price";
 
 // eslint-disable-next-line functional/functional-parameters
-export const getCurrentBlockHeight = async (): Promise<number> => {
+export const getCurrentBlockHeight = async (now: number): Promise<number> => {
   const cacheKey = "currentBlockHeight";
   const cachedData = localStorage.getItem(cacheKey);
 
@@ -13,13 +13,13 @@ export const getCurrentBlockHeight = async (): Promise<number> => {
       blockHeight: number;
       timestamp: number;
     };
-    if (timestamp > Date.now() - 10 * 60 * 1000) return blockHeight;
+    if (timestamp > now - 10 * 60 * 1000) return blockHeight;
   }
   console.log("...fetching lastest block height");
   const response = await fetch("https://blockchain.info/q/getblockcount");
   if (!response.ok) throw new Error("Failed to fetch current block height");
   const blockHeight = (await response.json()) as number;
-  const newData = JSON.stringify({ blockHeight, timestamp: Date.now() });
+  const newData = JSON.stringify({ blockHeight, timestamp: now });
   localStorage.setItem(cacheKey, newData);
 
   return blockHeight;
@@ -36,13 +36,15 @@ export const fetchBlockByHeight = async (height: number): Promise<number> => {
 };
 
 // eslint-disable-next-line functional/functional-parameters
-export const getCurrentPrice = async (): Promise<BitcoinDataPoint> => {
+export const getCurrentPrice = async (
+  now: number,
+): Promise<BitcoinDataPoint> => {
   console.time(CURRENT_PRICE);
   const url = `https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD`;
   const cacheKey = "BTC_PRICE_CACHE";
   // 1 hour cache
   const cacheExpiry = 60 * 60;
-  const currentTimestamp = Math.floor(Date.now() / 1000);
+  const currentTimestamp = Math.floor(now / 1000);
   const cachedData = localStorage.getItem(cacheKey);
 
   try {
@@ -90,13 +92,15 @@ export const getCurrentPrice = async (): Promise<BitcoinDataPoint> => {
 };
 
 // eslint-disable-next-line functional/functional-parameters
-export const getInterimWeeklyData = async (): Promise<BitcoinDataPoint[]> => {
+export const getInterimWeeklyData = async (
+  now: number,
+): Promise<BitcoinDataPoint[]> => {
   console.time("interim");
-  const now = new Date();
+  const nowDate = new Date(now);
   const startOfWeek = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate() - now.getDay(),
+    nowDate.getFullYear(),
+    nowDate.getMonth(),
+    nowDate.getDate() - nowDate.getDay(),
   );
   startOfWeek.setHours(0, 0, 0, 0);
   const startOfWeekTimestamp = Math.floor(startOfWeek.getTime() / 1000);
@@ -119,12 +123,12 @@ export const getInterimWeeklyData = async (): Promise<BitcoinDataPoint[]> => {
     ];
   }
   const lastCachedTimestamp = cachedData.at(-1)?.time ?? LAST_SAVED_TIMESTAMP;
-  const currentPriceData = await getCurrentPrice();
-  const secondsSinceLastCache = now.getTime() / 1000 - lastCachedTimestamp;
+  const currentPriceData = await getCurrentPrice(now);
+  const secondsSinceLastCache = nowDate.getTime() / 1000 - lastCachedTimestamp;
   const weeksSinceLastCache = Math.floor(
     secondsSinceLastCache / (7 * 24 * 60 * 60),
   );
-  const currentTime = Math.floor(now.getTime() / 1000);
+  const currentTime = Math.floor(nowDate.getTime() / 1000);
   if (lastCachedTimestamp >= currentTime - 604_800) {
     console.timeEnd("interim");
     return [...cachedData, currentPriceData];

@@ -1,8 +1,6 @@
-import { type Point } from "chart.js";
-
-import { MS_PER_WEEK } from "./constants";
 import {
   type ApplyModel,
+  type DatasetList,
   type HalvingData,
   type NormalizePrice,
 } from "./types";
@@ -26,6 +24,7 @@ export const weeksSinceLastHalving = (
     currentDate.getTime() - mostRecentHalvingDate.getTime();
   return Math.floor(timeDifference / millisecondsPerWeek);
 };
+
 export const calculateHalvings = (currentHeight: number): number[] => {
   const halvingInterval = 210_000;
   const count = Math.floor(currentHeight / halvingInterval);
@@ -52,42 +51,86 @@ export const saveHalvings = (halvings: HalvingData): void => {
   localStorage.setItem("halvings", JSON.stringify(halvings));
 };
 
+const base = 10;
+
 export const normalizePrice = ({
   currentBlock,
   currentPrice,
+  minMaxMultiple,
   model,
+  now,
   priceToNormalize,
   variable,
   week = 0,
 }: NormalizePrice): number => {
-  const min = model.minPrice({ currentBlock, currentPrice, variable, week });
-  const max = model.maxPrice({ currentBlock, currentPrice, variable, week });
+  const min = model.minPrice({
+    currentBlock,
+    currentPrice,
+    minMaxMultiple,
+    now,
+    variable,
+    week,
+  });
+  const max = model.maxPrice({
+    currentBlock,
+    currentPrice,
+    minMaxMultiple,
+    now,
+    variable,
+    week,
+  });
 
-  if (priceToNormalize < min) return Math.log10(priceToNormalize / min);
-  return (priceToNormalize - min) / (max - min);
+  if (priceToNormalize <= min) {
+    return Math.log10(priceToNormalize / min);
+  }
+  if (priceToNormalize < max) {
+    const logMin = Math.log10(min);
+    return (Math.log10(priceToNormalize) - logMin) / (Math.log10(max) - logMin);
+  }
+  return Math.log10(priceToNormalize / max) + 1;
 };
-
-const now = Date.now();
 
 export const applyModel = ({
   currentBlock,
   currentPrice,
+  minMaxMultiple,
   model,
   normalizedPrices,
-  startDate = now,
+  now,
   startIndex = 0,
   variable,
-}: ApplyModel): Point[] =>
-  normalizedPrices.map((price, index) => {
+}: ApplyModel): Float64Array => {
+  const bigints: number[] = normalizedPrices.map((price, index) => {
     const week = index + startIndex;
-    const min = model.minPrice({ currentBlock, currentPrice, variable, week });
-    const max = model.maxPrice({ currentBlock, currentPrice, variable, week });
-
-    return {
-      x: startDate + index * MS_PER_WEEK,
-      y: price >= 0 ? min + price * (max - min) : min * 10 ** price,
-    };
+    const min = model.minPrice({
+      currentBlock,
+      currentPrice,
+      minMaxMultiple,
+      now,
+      variable,
+      week,
+    });
+    const max = model.maxPrice({
+      currentBlock,
+      currentPrice,
+      minMaxMultiple,
+      now,
+      variable,
+      week,
+    });
+    if (price <= 0) {
+      return Number.parseFloat((min * base ** price).toFixed(2));
+    }
+    if (price < 1) {
+      const logMin = Math.log10(min);
+      return Number.parseFloat(
+        (base ** (price * (Math.log10(max) - logMin) + logMin)).toFixed(2),
+      );
+    }
+    return Number.parseFloat((max * base ** (price - 1)).toFixed(2));
   });
+  return new Float64Array(bigints);
+};
 
 export const seededRandom = (seed: number): number => {
   let t = seed + 0x6d_2b_79_f5;
@@ -121,3 +164,38 @@ export const quantile = (array: number[], percent: number): number => {
 // eslint-disable-next-line functional/functional-parameters
 export const timeout = async (): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, 0));
+
+export const getDataSize = (data: Float64Array[]): number => {
+  if (data.length === 0) return 0;
+  const elementSize = 8;
+  const singleArraySize = data[0].length * elementSize;
+  const totalSize = singleArraySize * data.length;
+  return totalSize / (1024 * 1024);
+};
+
+export const getDataSetSize = (data: DatasetList): number => {
+  let totalSize = 0;
+  const numberSize = 8;
+
+  for (const dataset of data) {
+    totalSize += dataset.label.length * 2;
+    if (dataset.backgroundColor !== undefined)
+      totalSize += dataset.backgroundColor.length * 2;
+    if (dataset.borderColor !== undefined)
+      totalSize += dataset.borderColor.length * 2;
+    if (dataset.yAxisID !== undefined) totalSize += dataset.yAxisID.length * 2;
+    totalSize += numberSize;
+    totalSize += numberSize;
+    if (dataset.borderWidth !== undefined) totalSize += numberSize;
+    if (dataset.borderDash !== undefined) {
+      totalSize += dataset.borderDash.length * numberSize;
+    }
+    totalSize += dataset.data.length * (numberSize * 2);
+    if (typeof dataset.fill === "string") {
+      totalSize += dataset.fill.length * 2;
+    } else if (typeof dataset.fill === "boolean") {
+      totalSize += 4;
+    }
+  }
+  return totalSize / (1024 * 1024);
+};

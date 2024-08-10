@@ -11,14 +11,16 @@ import {
   weeksSinceLastHalving,
 } from "../helpers";
 import { modelMap } from "../models";
-import { type Data, type SimulationWorker } from "../types";
+import { type Full, type Part, type PriceData } from "../types";
 import { walks } from "../walks";
 
 const signalState = { aborted: false };
 
+const SUSPEND_CONTROL = 50;
+
 let previousSimPath = "";
 let previousAdjustPath = "";
-let data: Data = [];
+let data: PriceData = [];
 
 const simulationWorker = async (
   simPath: string,
@@ -26,20 +28,17 @@ const simulationWorker = async (
   {
     clampBottom,
     clampTop,
-    currentBlock,
-    currentPrice,
-    epochCount,
-    halvings,
+    minMaxMultiple,
     model,
-    samples,
+    now,
     variable,
     volatility,
     walk,
-  }: SimulationWorker,
+  }: Full,
+  { currentBlock, currentPrice, epochCount, halvings, samples }: Part,
   signal: AbortSignal,
-): Promise<[string, Data]> => {
+): Promise<[string, PriceData]> => {
   const id = hashSum(Math.random());
-  console.log("starting new simulation...", id);
   signalState.aborted = false;
 
   // eslint-disable-next-line functional/functional-parameters
@@ -58,17 +57,19 @@ const simulationWorker = async (
   if (previousSimPath === previousAdjustPath || simPath !== previousSimPath) {
     previousSimPath = simPath;
     console.time("simulation" + id);
-    const graphs: Data = [];
+    const graphs: PriceData = [];
     const startingPrice = normalizePrice({
       currentBlock,
       currentPrice,
+      minMaxMultiple,
       model: mapped,
+      now,
       priceToNormalize: currentPrice,
       variable,
     });
     for (let index = 0; index < samples; index++) {
       let innerGraph: number[] = [];
-      if (index % 50 === 0) await timeout();
+      if (index % SUSPEND_CONTROL === 0) await timeout();
       for (let innerIndex = 0; innerIndex < epochCount; innerIndex++) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (signalState.aborted) {
@@ -91,8 +92,10 @@ const simulationWorker = async (
         applyModel({
           currentBlock,
           currentPrice,
+          minMaxMultiple,
           model: mapped,
           normalizedPrices: innerGraph,
+          now,
           variable,
         }),
       );
@@ -120,15 +123,18 @@ const simulationWorker = async (
         data = newData;
         return [id, newData];
       } else if (!GTcurrant && LTnext) {
-        const newData: Data = [];
+        const newData: PriceData = [];
         let count = 0;
         for (const sample of data) {
-          if (count++ % 50 === 0) await timeout();
+          if (count++ % SUSPEND_CONTROL === 0) await timeout();
+          const previousSample = sample.at(-1);
           const normalizedPrice = normalizePrice({
             currentBlock,
             currentPrice,
+            minMaxMultiple,
             model: mapped,
-            priceToNormalize: sample.at(-1)?.y ?? currentPrice,
+            now,
+            priceToNormalize: previousSample ?? currentPrice,
             variable,
             week: sample.length,
           });
@@ -162,13 +168,19 @@ const simulationWorker = async (
           const modelApplied = applyModel({
             currentBlock,
             currentPrice,
+            minMaxMultiple,
             model: mapped,
             normalizedPrices: newEpoch,
-            startDate: sample.at(-1)?.x,
+            now,
             startIndex: sample.length,
             variable,
           });
-          const newSample = sample.concat(modelApplied);
+
+          const newSample = new Float64Array(
+            sample.length + modelApplied.length,
+          );
+          newSample.set(sample);
+          newSample.set(modelApplied, sample.length);
           newData.push(newSample);
         }
         console.timeEnd("adjustment");
@@ -177,17 +189,19 @@ const simulationWorker = async (
         return [id, newData];
       }
     } else if (samples > data.length) {
-      const additionalData: Data = [];
+      const additionalData: PriceData = [];
       const startingPrice = normalizePrice({
         currentBlock,
         currentPrice,
+        minMaxMultiple,
         model: mapped,
+        now,
         priceToNormalize: currentPrice,
         variable,
       });
 
       for (let index = data.length; index < samples; index++) {
-        if (index % 50 === 0) await timeout();
+        if (index % SUSPEND_CONTROL === 0) await timeout();
         let innerGraph: number[] = [];
         for (let innerIndex = 0; innerIndex < epochCount; innerIndex++) {
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -210,8 +224,10 @@ const simulationWorker = async (
           applyModel({
             currentBlock,
             currentPrice,
+            minMaxMultiple,
             model: mapped,
             normalizedPrices: innerGraph,
+            now,
             variable,
           }),
         );

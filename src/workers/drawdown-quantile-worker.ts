@@ -2,16 +2,18 @@
 /* eslint-disable security/detect-object-injection */
 import hashSum from "hash-sum";
 
+import { MS_PER_WEEK } from "../constants";
 import { quantileColor } from "../content";
 import { quantile, timeout } from "../helpers";
-import { type Data, type DatasetList } from "../types";
+import { type DatasetList, type VolumeData } from "../types";
 
 const signalState = { aborted: false };
 
 const NAME = "volume quantile";
 
 const quantileWorker = async (
-  volumeDataset: Data,
+  volumeDataset: VolumeData,
+  drawdownDate: number,
   signal: AbortSignal,
 ): Promise<[string, DatasetList | undefined]> => {
   const id = hashSum(Math.random());
@@ -39,9 +41,12 @@ const quantileWorker = async (
     } else {
       // console.log("loop quantile");
     }
-    for (const { x, y } of innerArray) {
+    let innerIndex = 0;
+    for (const y of innerArray) {
+      const x = drawdownDate + innerIndex * MS_PER_WEEK;
       if (!(x in groupedData)) groupedData[x] = [];
       groupedData[x].push(y);
+      innerIndex++;
     }
   }
 
@@ -170,7 +175,7 @@ const quantileWorker = async (
       tension: 0,
       yAxisID: "y1",
     },
-  ];
+  ] satisfies DatasetList;
   signal.removeEventListener("abort", AbortAction);
   console.timeEnd(NAME + id);
   return [id, finalData];

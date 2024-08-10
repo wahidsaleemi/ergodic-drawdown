@@ -1,15 +1,26 @@
 .container {
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 100vh;
 }
 
 .section {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: space-between;
-  padding: 20px;
+  justify-content: space-around;
   gap: 20px;
+  max-width: min(95vw, 1300px);
+}
+
+.header {
+  width: 100%;
+  font-size: x-large;
+  padding-top: 20px;
+  max-width: min(95vw, 1300px);
+  text-align: left;
 }
 
 .group {
@@ -32,6 +43,23 @@
   padding-right: 5px;
 }
 
+.input-row > div {
+  flex-shrink: 1;
+  display: flex;
+  gap: 5px;
+}
+
+.input-row > input {
+  text-align: right;
+}
+
+.input-row > div > input {
+  width: 55px;
+  min-width: 1px;
+  flex-grow: 1;
+  text-align: right;
+}
+
 .start {
   justify-content: flex-start;
   gap: 0px 10px;
@@ -47,15 +75,12 @@
   font-size: inherit;
 }
 
-.input-date {
-  font-size: inherit;
+.input-row.expenses-input > input {
+  max-width: 125px;
 }
 
-.header {
-  text-align: start;
-  padding-left: 20px;
-  font-size: x-large;
-  max-width: 72.5vw;
+.input-date {
+  font-size: inherit;
 }
 
 .wide {
@@ -85,6 +110,11 @@
 .stats {
   white-space: wrap;
   justify-content: center;
+}
+
+.chart {
+  max-width: min(95vw, 1800px);
+  max-height: 1100px;
 }
 
 .angled-ribbon {
@@ -133,9 +163,14 @@
 }
 
 .center-text {
+  margin: 25px;
   display: flex;
-  justify-content: center;
-  min-height: 100px;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  gap: 15px;
+  min-height: 150px;
+  max-width: min(95vw, 1100px);
 }
 
 @keyframes spin {
@@ -167,72 +202,76 @@
 .how-to {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  max-width: 95vw;
+  padding-left: 20px;
 }
 
 .how-to-panel {
   overflow: hidden;
   max-height: 0px;
-  transition: max-height 0.3s;
+  transition: max-height .5s;
   width: auto;
+  max-width: min(95vw, 1000px);
   text-align: left;
 }
 
 .how-to-panel.visible {
-  max-height: 7000px;
+  max-height: 4500px;
 }
 
 .button-box {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  max-width: 95vw;
+}
+
+.tutorial-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: min(95vw, 1300px);
+  overflow: hidden;
+}
+
+.showables {
+  max-height: 0px;
+  overflow: hidden;
+  transition: max-height .5s;
+  max-width: min(95vw, 1300px);
+}
+
+.showables.visible {
+  max-height: 400px;
+}
+
+.nav {
+  display: flex;
+  align-items: baseline;
   justify-content: center;
   gap: 10px;
 }
 
-h1 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  line-height: 1.8rem;
+.slides {
+  width: 1200vw;
+  display: flex;
+  transition: transform .3s ease-in-out;
+}
+
+.slide {
+  width: min(95vw, 1300px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slide-content {
+  max-width: 60vw;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
   text-align: left;
-}
-
-h2 {
-  font-size: 1.3rem;
-  font-weight: bold;
-  margin-top: 1rem;
-}
-
-h3 {
-  font-size: 1rem;
-  font-weight: bold;
-}
-
-p {
-  margin: 0.5rem 0.5rem;
-}
-
-ul {
-  list-style-type: disc;
-  margin-left: 2rem;
-}
-
-li {
-  margin: 0.5rem 0;
-}
-
-a {
-  text-decoration: none;
-  font-weight: bold;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
-strong {
-  font-weight: bold;
-}
-
-em {
-  font-style: italic;
 }

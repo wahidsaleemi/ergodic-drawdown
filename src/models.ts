@@ -1,3 +1,5 @@
+import memoize from "memoizee";
+
 import {
   BLOCKS_PER_WEEK,
   BLOCKS_PER_YEAR,
@@ -8,18 +10,6 @@ import {
   WEEKS_PER_YEAR,
 } from "./constants";
 import { type PriceModel } from "./types";
-
-const memoize = (
-  function_: (argument: number) => number,
-): ((argument: number) => number) => {
-  const cache: Record<string, number> = {};
-  return (argument: number): number => {
-    if (!(argument in cache)) {
-      cache[argument] = function_(argument);
-    }
-    return cache[argument];
-  };
-};
 
 const getRewardForHalving = memoize((halvingIndex: number): number => {
   return 50 / 2 ** halvingIndex;
@@ -43,65 +33,127 @@ const calculateOneYearFlow = memoize((blockNumber: number): number => {
 
 const stockToFlowModel: PriceModel = {
   default: 0,
-  maxPrice: ({ currentBlock, week }): number => {
-    const blockToFind = currentBlock + week * BLOCKS_PER_WEEK;
-    const stock = calculateTotalStock(blockToFind);
-    const flow = calculateOneYearFlow(blockToFind);
-    const stockToFlow = stock / flow;
-    const basePrice = Math.exp(-1.02) * stockToFlow ** 3.08;
-    const confidence = (65 / 100) * basePrice;
+  maxPrice: memoize(
+    ({ currentBlock, week }): number => {
+      const blockToFind = currentBlock + week * BLOCKS_PER_WEEK;
+      const stock = calculateTotalStock(blockToFind);
+      const flow = calculateOneYearFlow(blockToFind);
+      const stockToFlow = stock / flow;
+      const basePrice = Math.exp(-1.02) * stockToFlow ** 3.08;
+      const confidence = (65 / 100) * basePrice;
 
-    return basePrice + confidence;
-  },
-  minPrice: ({ currentBlock, week }): number => {
-    const blockToFind = currentBlock + week * BLOCKS_PER_WEEK;
-    const stock = calculateTotalStock(blockToFind);
-    const flow = calculateOneYearFlow(blockToFind);
-    const stockToFlow = stock / flow;
-    const basePrice = Math.exp(-1.02) * stockToFlow ** 3.08;
-    const confidence = (65 / 100) * basePrice;
+      return basePrice + confidence;
+    },
+    {
+      max: 5000,
+      normalizer: function ([{ currentBlock, week }]) {
+        return String(currentBlock) + String(week);
+      },
+    },
+  ),
+  minPrice: memoize(
+    ({ currentBlock, week }): number => {
+      const blockToFind = currentBlock + week * BLOCKS_PER_WEEK;
+      const stock = calculateTotalStock(blockToFind);
+      const flow = calculateOneYearFlow(blockToFind);
+      const stockToFlow = stock / flow;
+      const basePrice = Math.exp(-1.02) * stockToFlow ** 3.08;
+      const confidence = (65 / 100) * basePrice;
 
-    return basePrice - confidence;
-  },
+      return basePrice - confidence;
+    },
+    {
+      max: 5000,
+      normalizer: function ([{ currentBlock, week }]) {
+        return String(currentBlock) + String(week);
+      },
+    },
+  ),
   modelType: "Stock-To-Flow (exponential)" as const,
   varInput: "",
 };
 
 const stockToFlowModelNew: PriceModel = {
   default: 0,
-  maxPrice: ({ currentBlock, week }): number => {
-    const blockToFind = currentBlock + week * BLOCKS_PER_WEEK;
-    const stock = calculateTotalStock(blockToFind);
-    const flow = calculateOneYearFlow(blockToFind);
-    const stockToFlow = stock / flow;
-    const basePrice = 0.25 * stockToFlow ** 3;
-    const confidence = (68 / 100) * basePrice;
+  maxPrice: memoize(
+    ({ currentBlock, week }): number => {
+      const blockToFind = currentBlock + week * BLOCKS_PER_WEEK;
+      const stock = calculateTotalStock(blockToFind);
+      const flow = calculateOneYearFlow(blockToFind);
+      const stockToFlow = stock / flow;
+      const basePrice = 0.25 * stockToFlow ** 3;
+      const confidence = (68 / 100) * basePrice;
 
-    return basePrice + confidence;
-  },
-  minPrice: ({ currentBlock, week }): number => {
-    const blockToFind = currentBlock + week * BLOCKS_PER_WEEK;
-    const stock = calculateTotalStock(blockToFind);
-    const flow = calculateOneYearFlow(blockToFind);
-    const stockToFlow = stock / flow;
-    const basePrice = 0.25 * stockToFlow ** 3;
-    const confidence = (68 / 100) * basePrice;
+      return basePrice + confidence;
+    },
+    {
+      max: 5000,
+      normalizer: function ([{ currentBlock, week }]) {
+        return String(currentBlock) + String(week);
+      },
+    },
+  ),
+  minPrice: memoize(
+    ({ currentBlock, week }): number => {
+      const blockToFind = currentBlock + week * BLOCKS_PER_WEEK;
+      const stock = calculateTotalStock(blockToFind);
+      const flow = calculateOneYearFlow(blockToFind);
+      const stockToFlow = stock / flow;
+      const basePrice = 0.25 * stockToFlow ** 3;
+      const confidence = (68 / 100) * basePrice;
 
-    return basePrice - confidence;
-  },
+      return basePrice - confidence;
+    },
+    {
+      max: 5000,
+      normalizer: function ([{ currentBlock, week }]) {
+        return String(currentBlock) + String(week);
+      },
+    },
+  ),
   modelType: "Stock-To-Flow 2024 refit (exponential)" as const,
   varInput: "",
 };
 
 const basicGrowthModel: PriceModel = {
   default: 2,
-  maxPrice: ({ currentPrice, variable, week }): number => {
-    return currentPrice * 3 + 2 * variable * week ** 2;
-  },
-  minPrice: ({ currentPrice, variable, week }): number => {
-    return currentPrice / 3 + variable * week ** 2;
-  },
-  modelType: "Quadratic (polynomial)" as const,
+  maxPrice: memoize(
+    ({ currentPrice, minMaxMultiple, variable, week }): number => {
+      return currentPrice * minMaxMultiple + 2 * variable * week ** 2;
+    },
+    {
+      max: 5000,
+      normalizer: function ([
+        { currentPrice, minMaxMultiple, variable, week },
+      ]) {
+        return (
+          String(currentPrice) +
+          String(week) +
+          String(minMaxMultiple) +
+          String(variable)
+        );
+      },
+    },
+  ),
+  minPrice: memoize(
+    ({ currentPrice, minMaxMultiple, variable, week }): number => {
+      return currentPrice / minMaxMultiple + variable * week ** 2;
+    },
+    {
+      max: 5000,
+      normalizer: function ([
+        { currentPrice, minMaxMultiple, variable, week },
+      ]) {
+        return (
+          String(currentPrice) +
+          String(week) +
+          String(minMaxMultiple) +
+          String(variable)
+        );
+      },
+    },
+  ),
+  modelType: "Quadratic" as const,
   varInput: "coefficient",
 };
 
@@ -114,15 +166,30 @@ const basePriceModel = (currentDate: Date): number => {
 
 const rainbowChartModel: PriceModel = {
   default: 0,
-  maxPrice: ({ week }): number => {
-    const currentDate = new Date(Date.now() + week * MS_PER_WEEK);
-    return basePriceModel(currentDate);
-  },
-
-  minPrice: ({ week }): number => {
-    const currentDate = new Date(Date.now() + week * MS_PER_WEEK);
-    return basePriceModel(currentDate) * 0.1;
-  },
+  maxPrice: memoize(
+    ({ now, week }): number => {
+      const currentDate = new Date(now + week * MS_PER_WEEK);
+      return basePriceModel(currentDate);
+    },
+    {
+      max: 5000,
+      normalizer: function ([{ now, week }]) {
+        return String(week) + String(now);
+      },
+    },
+  ),
+  minPrice: memoize(
+    ({ now, week }): number => {
+      const currentDate = new Date(now + week * MS_PER_WEEK);
+      return basePriceModel(currentDate) * 0.1;
+    },
+    {
+      max: 5000,
+      normalizer: function ([{ now, week }]) {
+        return String(week) + String(now);
+      },
+    },
+  ),
   modelType: "Rainbow Chart (logarithmic)",
   varInput: "",
 };
@@ -136,15 +203,31 @@ const powerLaw = (unixTimeMs: number, offsetYears = 0): number => {
 
 const powerLawModel: PriceModel = {
   default: 0,
-  maxPrice: ({ week }): number => {
-    const currentDate = new Date(Date.now() + week * MS_PER_WEEK);
-    return powerLaw(currentDate.getTime(), 6);
-  },
+  maxPrice: memoize(
+    ({ now, week }): number => {
+      const currentDate = new Date(now + week * MS_PER_WEEK);
+      return powerLaw(currentDate.getTime(), 6);
+    },
+    {
+      max: 5000,
+      normalizer: function ([{ now, week }]) {
+        return String(week) + String(now);
+      },
+    },
+  ),
 
-  minPrice: ({ week }): number => {
-    const currentDate = new Date(Date.now() + week * MS_PER_WEEK);
-    return powerLaw(currentDate.getTime());
-  },
+  minPrice: memoize(
+    ({ now, week }): number => {
+      const currentDate = new Date(now + week * MS_PER_WEEK);
+      return powerLaw(currentDate.getTime());
+    },
+    {
+      max: 5000,
+      normalizer: function ([{ now, week }]) {
+        return String(week) + String(now);
+      },
+    },
+  ),
 
   modelType: "Power Law Regression Median (logarithmic)",
   varInput: "",
@@ -162,23 +245,42 @@ const log10PriceModel = (
 
 const log10PriceModelConfig: PriceModel = {
   default: 0,
-  maxPrice: ({ week }): number => {
-    const currentDate = new Date(Date.now() + week * MS_PER_WEEK);
-    const min = log10PriceModel(currentDate.getTime(), -17.928_912, 5.977_458);
-    const max = log10PriceModel(currentDate.getTime(), -12.363_33, 4.699_254);
-    return max < min ? min : max;
-  },
+  maxPrice: memoize(
+    ({ now, week }): number => {
+      const currentDate = new Date(now + week * MS_PER_WEEK);
+      const min = log10PriceModel(
+        currentDate.getTime(),
+        -17.928_912,
+        5.977_458,
+      );
+      const max = log10PriceModel(currentDate.getTime(), -12.363_33, 4.699_254);
+      return max < min ? min : max;
+    },
+    {
+      max: 5000,
+      normalizer: function ([{ now, week }]) {
+        return String(week) + String(now);
+      },
+    },
+  ),
 
-  minPrice: ({ week }): number => {
-    const currentDate = new Date(Date.now() + week * MS_PER_WEEK);
-    return log10PriceModel(currentDate.getTime(), -17.928_912, 5.977_458);
-  },
+  minPrice: memoize(
+    ({ now, week }): number => {
+      const currentDate = new Date(now + week * MS_PER_WEEK);
+      return log10PriceModel(currentDate.getTime(), -17.928_912, 5.977_458);
+    },
+    {
+      max: 5000,
+      normalizer: function ([{ now, week }]) {
+        return String(week) + String(now);
+      },
+    },
+  ),
 
   modelType: "Power Law Support Line (logarithmic)",
   varInput: "",
 };
 
-// Helper function to calculate CAGR-based price
 const calculateCAGRPrice = (
   startPrice: number,
   timeInMs: number,
@@ -188,30 +290,61 @@ const calculateCAGRPrice = (
   return startPrice * (1 + variable / 100) ** years;
 };
 
-// Define the CAGR Model
 const cagrModel: PriceModel = {
   default: 50,
-  maxPrice: ({ currentPrice, variable, week }): number => {
-    const startPrice = currentPrice * 3;
-    const targetDate = new Date(Date.now() + week * MS_PER_WEEK);
-    return calculateCAGRPrice(
-      startPrice,
-      targetDate.getTime() - Date.now(),
-      variable,
-    );
-  },
+  maxPrice: memoize(
+    ({ currentPrice, minMaxMultiple, now, variable, week }): number => {
+      const startPrice = currentPrice * minMaxMultiple;
+      const targetDate = new Date(now + week * MS_PER_WEEK);
+      return calculateCAGRPrice(
+        startPrice,
+        targetDate.getTime() - now,
+        variable,
+      );
+    },
+    {
+      max: 5000,
+      normalizer: function ([
+        { currentPrice, minMaxMultiple, now, variable, week },
+      ]) {
+        return (
+          String(currentPrice) +
+          String(week) +
+          String(minMaxMultiple) +
+          String(variable) +
+          String(now)
+        );
+      },
+    },
+  ),
 
-  minPrice: ({ currentPrice, variable, week }): number => {
-    const startPrice = currentPrice / 3;
-    const targetDate = new Date(Date.now() + week * MS_PER_WEEK);
-    return calculateCAGRPrice(
-      startPrice,
-      targetDate.getTime() - Date.now(),
-      variable,
-    );
-  },
+  minPrice: memoize(
+    ({ currentPrice, minMaxMultiple, now, variable, week }): number => {
+      const startPrice = currentPrice / minMaxMultiple;
+      const targetDate = new Date(now + week * MS_PER_WEEK);
+      return calculateCAGRPrice(
+        startPrice,
+        targetDate.getTime() - now,
+        variable,
+      );
+    },
+    {
+      max: 5000,
+      normalizer: function ([
+        { currentPrice, minMaxMultiple, now, variable, week },
+      ]) {
+        return (
+          String(currentPrice) +
+          String(week) +
+          String(minMaxMultiple) +
+          String(variable) +
+          String(now)
+        );
+      },
+    },
+  ),
 
-  modelType: "CAGR (geometric)",
+  modelType: "CAGR",
   varInput: "R (%)",
 };
 
@@ -227,15 +360,49 @@ const calculateLinearPrice = (
 // Define the Linear Model
 const linearModel: PriceModel = {
   default: Math.floor(4747 / WEEKS_PER_YEAR),
-  maxPrice: ({ currentPrice, variable, week }): number => {
-    return calculateLinearPrice(week, currentPrice, variable) * 3;
-  },
+  maxPrice: memoize(
+    ({ currentPrice, minMaxMultiple, variable, week }): number => {
+      return (
+        calculateLinearPrice(week, currentPrice, variable) * minMaxMultiple
+      );
+    },
+    {
+      max: 5000,
+      normalizer: function ([
+        { currentPrice, minMaxMultiple, variable, week },
+      ]) {
+        return (
+          String(currentPrice) +
+          String(week) +
+          String(minMaxMultiple) +
+          String(variable)
+        );
+      },
+    },
+  ),
 
-  minPrice: ({ currentPrice, variable, week }): number => {
-    return calculateLinearPrice(week, currentPrice, variable) / 3;
-  },
+  minPrice: memoize(
+    ({ currentPrice, minMaxMultiple, variable, week }): number => {
+      return (
+        calculateLinearPrice(week, currentPrice, variable) / minMaxMultiple
+      );
+    },
+    {
+      max: 5000,
+      normalizer: function ([
+        { currentPrice, minMaxMultiple, variable, week },
+      ]) {
+        return (
+          String(currentPrice) +
+          String(week) +
+          String(minMaxMultiple) +
+          String(variable)
+        );
+      },
+    },
+  ),
 
-  modelType: `Arithmetic (Linear)`,
+  modelType: `Linear`,
   varInput: "slope",
 };
 

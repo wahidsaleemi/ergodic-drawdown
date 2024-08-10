@@ -2,16 +2,18 @@
 /* eslint-disable security/detect-object-injection */
 import hashSum from "hash-sum";
 
+import { MS_PER_WEEK } from "../constants";
 import { bitcoinColor, priceQuantileColor } from "../content";
 import { quantile, timeout } from "../helpers";
-import { type Data, type DatasetList } from "../types";
+import { type DatasetList, type PriceData } from "../types";
 
 const signalState = { aborted: false };
 
 const NAME = "price quantile";
 
 const priceQuantileWorker = async (
-  priceDataset: Data,
+  priceDataset: PriceData,
+  now: number,
   signal: AbortSignal,
 ): Promise<[string, DatasetList | undefined]> => {
   const id = hashSum(Math.random());
@@ -39,9 +41,12 @@ const priceQuantileWorker = async (
     } else {
       // console.log("loop price quantile 1");
     }
-    for (const { x, y } of innerArray) {
+    let innerIndex = 0;
+    for (const y of innerArray) {
+      const x = now + innerIndex * MS_PER_WEEK;
       if (!(x in groupedData)) groupedData[x] = [];
-      groupedData[x].push(y);
+      groupedData[x].push(y <= 0 ? 0.01 : y);
+      innerIndex++;
     }
   }
 
@@ -161,7 +166,7 @@ const priceQuantileWorker = async (
       pointRadius: 0,
       tension: 0,
     },
-  ];
+  ] satisfies DatasetList;
   signal.removeEventListener("abort", AbortAction);
   console.timeEnd(NAME + id);
   return [id, finalData];

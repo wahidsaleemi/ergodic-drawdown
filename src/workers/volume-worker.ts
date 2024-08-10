@@ -2,12 +2,16 @@ import hashSum from "hash-sum";
 
 import { MS_PER_DAY, MS_PER_WEEK, WEEKS_PER_YEAR } from "../constants";
 import { quantile, timeout } from "../helpers";
-import { type Data, type VolumeReturn, type VolumeWorker } from "../types";
+import {
+  type VolumeData,
+  type VolumeReturn,
+  type VolumeWorker,
+} from "../types";
 
 const signalState = { aborted: false };
 
 const volumeWorker = async (
-  { bitcoin, costOfLiving, data, drawdownDate, inflation }: VolumeWorker,
+  { bitcoin, costOfLiving, data, drawdownDate, inflation, now }: VolumeWorker,
   signal: AbortSignal,
 ): Promise<[string, VolumeReturn | undefined]> => {
   const id = hashSum(Math.random());
@@ -25,16 +29,14 @@ const volumeWorker = async (
 
   let zero = 0;
   const finalBalance: number[] = [];
-  const now = Date.now();
   const adjustedDif = Math.floor(
     (drawdownDate + MS_PER_DAY - now) / MS_PER_WEEK,
   );
   const iterations =
     (data[0] ?? []).length - (drawdownDate - now) / MS_PER_WEEK;
-  const startDistro = new Date(drawdownDate);
   const weeklyInflationRate = (1 + inflation / 100) ** (1 / WEEKS_PER_YEAR) - 1;
 
-  const volumeDataset: Data = [];
+  const volumeDataset: VolumeData = [];
   let index = 0;
   for (const graph of data) {
     if (index % 50 === 0) await timeout();
@@ -50,23 +52,22 @@ const volumeWorker = async (
     const dataArray = [];
 
     for (let innerIndex = 0; innerIndex < iterations; innerIndex++) {
-      const x = startDistro.getTime() + innerIndex * MS_PER_WEEK;
       if (previous <= 0) {
-        dataArray.push({ x, y: 0 });
+        dataArray.push(0);
         continue;
       }
       const adjustedInnerIndex = innerIndex + adjustedDif;
       if (innerIndex !== 0) weeklyCostOfLiving *= 1 + weeklyInflationRate;
       // eslint-disable-next-line security/detect-object-injection
-      const y = previous - weeklyCostOfLiving / graph[adjustedInnerIndex]?.y;
+      const y = previous - weeklyCostOfLiving / graph[adjustedInnerIndex];
       previous = y;
-      dataArray.push({ x, y });
+      dataArray.push(y);
     }
 
-    const last = dataArray.at(-1);
-    if (last !== undefined && last.y <= 0) zero += 1;
-    if (last !== undefined) finalBalance.push(last.y);
-    volumeDataset.push(dataArray);
+    const y = dataArray.at(-1);
+    if (y !== undefined && y <= 0) zero += 1;
+    if (y !== undefined) finalBalance.push(y);
+    volumeDataset.push(new Float64Array(dataArray));
     index++;
   }
 
