@@ -1,4 +1,4 @@
-import{N as e}from"./index-Cioa8r3B.js";const o={onButtonText:"FAQ",offButtonText:"Close FAQ",order:2};function i(t){const n={a:"a",h2:"h2",li:"li",ol:"ol",p:"p",strong:"strong",...t.components};return e.jsxs(e.Fragment,{children:[e.jsx(n.h2,{children:"Frequently Asked Questions (FAQ)"}),`
+import{N as e}from"./index-pVwhuI9Q.js";const o={onButtonText:"FAQ",offButtonText:"Close FAQ",order:2};function i(t){const n={a:"a",h2:"h2",li:"li",ol:"ol",p:"p",strong:"strong",...t.components};return e.jsxs(e.Fragment,{children:[e.jsx(n.h2,{children:"Frequently Asked Questions (FAQ)"}),`
 `,e.jsxs(n.ol,{children:[`
 `,e.jsxs(n.li,{children:[`
 `,e.jsx(n.p,{children:e.jsx(n.strong,{children:"What is drawdown in the context of Bitcoin financial modeling?"})}),`

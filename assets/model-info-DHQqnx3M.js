@@ -1,4 +1,4 @@
-import{N as e}from"./index-Cioa8r3B.js";const r={onButtonText:"Models",offButtonText:"Close Models",order:3};function t(n){const i={a:"a",h2:"h2",h3:"h3",li:"li",p:"p",ul:"ul",...n.components};return e.jsxs(e.Fragment,{children:[e.jsx(i.h2,{children:"The Models"}),`
+import{N as e}from"./index-pVwhuI9Q.js";const r={onButtonText:"Models",offButtonText:"Close Models",order:3};function t(n){const i={a:"a",h2:"h2",h3:"h3",li:"li",p:"p",ul:"ul",...n.components};return e.jsxs(e.Fragment,{children:[e.jsx(i.h2,{children:"The Models"}),`
 `,e.jsx(i.h3,{children:"1. Linear"}),`
 `,e.jsx(i.p,{children:"This model assumes a linear growth or decline rate of Bitcoin prices over time. It's the simplest model and typically used for short-term forecasts. It also happens to be irrelevant, as nothing in finance and economics follows a Linear path but it is included for completeness."}),`
 `,e.jsx(i.h3,{children:"2. Quadratic"}),`
